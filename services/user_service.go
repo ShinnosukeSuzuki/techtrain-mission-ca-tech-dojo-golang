@@ -20,3 +20,15 @@ func (s *MyAppService) UserCreateService(name string) (models.User, error) {
 
 	return newUser, nil
 }
+
+// ハンドラー UserGetHandler 用のサービスメソッド
+func (s *MyAppService) UserGetService(token string) (models.User, error) {
+
+	// tokenを持つユーザーを取得
+	user, err := repositories.GetUserByToken(s.db, token)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
+}

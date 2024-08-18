@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/common"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/controllers/services"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
 )
@@ -43,6 +44,34 @@ func (c *UserController) UserCreateHandler(w http.ResponseWriter, r *http.Reques
 	// レスポンスを返却
 	res := &models.UserCreateResponse{
 		Token: user.Token,
+	}
+	if err := json.NewEncoder(w).Encode(res); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+// GET /user/get
+func (c *UserController) UserGetHandler(w http.ResponseWriter, r *http.Request) {
+	// GET以外のリクエストはエラー
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// X-Tokenをcontextから取得
+	xToken := common.GetToken(r)
+
+	// X-Tokenを持つユーザーを取得
+	user, err := c.service.UserGetService(xToken)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// レスポンスを返却
+	res := &models.UserGetResponse{
+		Name: user.Name,
 	}
 	if err := json.NewEncoder(w).Encode(res); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

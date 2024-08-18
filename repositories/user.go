@@ -25,3 +25,20 @@ func CreateUser(db *sql.DB, name string, token string) (models.User, error) {
 
 	return newUser, nil
 }
+
+// tokenからユーザーを取得する
+func GetUserByToken(db *sql.DB, token string) (models.User, error) {
+	const sqlSelectUserByToken = `
+		SELECT *
+		FROM users
+		WHERE token = ?;
+	`
+
+	var user models.User
+	err := db.QueryRow(sqlSelectUserByToken, token).Scan(&user.ID, &user.Name, &user.Token)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
+}

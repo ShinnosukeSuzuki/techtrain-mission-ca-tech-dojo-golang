@@ -16,4 +16,9 @@ type (
 	UserCreateResponse struct {
 		Token string `json:"token"`
 	}
+
+	// /user/getのレスポンスボディ
+	UserGetResponse struct {
+		Name string `json:"name"`
+	}
 )

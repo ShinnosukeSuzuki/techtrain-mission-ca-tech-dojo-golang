@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/api/middleware"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/controllers"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/services"
 )
@@ -20,7 +21,9 @@ func NewRouter(db *sql.DB) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// ルーティングの設定
-	mux.HandleFunc("/user/create", uc.UserCreateHandler)
+	mux.Handle("/user/create", http.HandlerFunc(uc.UserCreateHandler))
+	// /user/getではX-Tokenが必要なのでmiddlewareを適用
+	mux.Handle("/user/get", middleware.XTokenAuthMiddleware(http.HandlerFunc(uc.UserGetHandler), db))
 
 	return mux
 }
