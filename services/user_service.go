@@ -32,3 +32,15 @@ func (s *MyAppService) UserGetService(token string) (models.User, error) {
 
 	return user, nil
 }
+
+// ハンドラー UserUpdateHandler 用のサービスメソッド
+func (s *MyAppService) UserUpdateService(token string, name string) error {
+
+	// tokenを持つユーザーのnameを更新
+	err := repositories.UpdateUserNameByToken(s.db, token, name)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -42,3 +42,19 @@ func GetUserByToken(db *sql.DB, token string) (models.User, error) {
 
 	return user, nil
 }
+
+// tokenが一致するユーザーのnameを更新する
+func UpdateUserNameByToken(db *sql.DB, token string, name string) error {
+	const sqlUpdateUserNameByToken = `
+		UPDATE users
+		SET name = ?
+		WHERE token = ?;
+	`
+
+	_, err := db.Exec(sqlUpdateUserNameByToken, name, token)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

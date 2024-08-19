@@ -21,4 +21,9 @@ type (
 	UserGetResponse struct {
 		Name string `json:"name"`
 	}
+
+	// /user/updateのリクエストボディ
+	UserUpdateRequest struct {
+		Name string `json:"name"`
+	}
 )

@@ -6,4 +6,5 @@ import "github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models
 type UserServicer interface {
 	UserCreateService(name string) (models.User, error)
 	UserGetService(token string) (models.User, error)
+	UserUpdateService(token string, name string) error
 }

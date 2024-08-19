@@ -78,3 +78,30 @@ func (c *UserController) UserGetHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 }
+
+// PUT /user/update
+func (c *UserController) UserUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	// PUT以外のリクエストはエラー
+	if r.Method != http.MethodPut {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	// リクエストボディをパース
+	req := &models.UserUpdateRequest{}
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// X-Tokenをcontextから取得
+	xToken := common.GetToken(r)
+
+	// ユーザーのnameを更新
+	if err := c.service.UserUpdateService(xToken, req.Name); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// レスポンスを返却(200を返すだけ)
+	w.WriteHeader(http.StatusOK)
+}
