@@ -2,13 +2,13 @@ version: '3.3'
 services:
   mysql:
     platform: linux/x86_64
-    image: mysql:5.7 # MySQL のバージョンを指定
+    image: mysql:8.0 # MySQL のバージョンを指定
     container_name: db-for-go
     # MySQL の設定値を指定
     command:
     - --character-set-server=utf8mb4
     - --collation-server=utf8mb4_unicode_ci
-    - --sql-mode=ONLY_FULL_GROUP_BY,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+    - --sql-mode=ONLY_FULL_GROUP_BY,NO_ENGINE_SUBSTITUTION
     # コンテナ内で使用する環
     environment:
       MYSQL_ROOT_USER: ${ROOTUSER} # MySQL のルートユーザー名
