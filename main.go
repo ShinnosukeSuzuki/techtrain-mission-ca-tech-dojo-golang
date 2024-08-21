@@ -30,7 +30,6 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt, os.Kill)
 	defer stop()
 
-	log.Println("server start at :8080")
 	srv := &http.Server{
 		Addr:    ":8080",
 		Handler: r,
@@ -55,6 +54,7 @@ func main() {
 		defer wg.Done()
 	}()
 
+	log.Println("server start at :8080")
 	// 正常にシャットダウンした場合はhttp.ErrServerClosedが返る
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("ListenAndServe(): %v", err)
