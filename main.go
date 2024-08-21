@@ -19,8 +19,14 @@ func main() {
 	// DB接続
 	db, err := db.NewDB()
 	if err != nil {
-		log.Println("failed to connect database")
+		log.Println("failed to connect database", err)
 		return
+	}
+	defer db.Close()
+
+	// DB接続を確認し、接続が確認できない場合はサーバーを停止
+	if err := db.Ping(); err != nil {
+		log.Fatalf("server shutdown because db connection failed: %v", err)
 	}
 
 	// ルーターを作成

@@ -24,8 +24,9 @@ func NewDB() (*sql.DB, error) {
 	)
 
 	db, err := sql.Open("mysql", dbConn)
+
 	if err != nil {
-		log.Fatalf("failed to connect database: %v", err)
+		return nil, err
 	}
 
 	return db, nil
