@@ -6,7 +6,6 @@ import (
 
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/common"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/controllers/services"
-	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
 )
 
 // User用のコントローラ構造体
@@ -19,6 +18,28 @@ func NewUserController(s services.UserServicer) *UserController {
 	return &UserController{service: s}
 }
 
+// ユーザーのリクエスト・レスポンスボディを定義
+type (
+	// /user/createのリクエストボディ
+	UserCreateRequest struct {
+		Name string `json:"name"`
+	}
+	// /user/createのレスポンスボディ
+	UserCreateResponse struct {
+		Token string `json:"token"`
+	}
+
+	// /user/getのレスポンスボディ
+	UserGetResponse struct {
+		Name string `json:"name"`
+	}
+
+	// /user/updateのリクエストボディ
+	UserUpdateRequest struct {
+		Name string `json:"name"`
+	}
+)
+
 // ハンドラーメソッドを定義
 // POST /user/create
 func (c *UserController) UserCreateHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +49,7 @@ func (c *UserController) UserCreateHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	// リクエストボディをパース
-	req := &models.UserCreateRequest{}
+	req := &UserCreateRequest{}
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -42,7 +63,7 @@ func (c *UserController) UserCreateHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	// レスポンスを返却
-	res := &models.UserCreateResponse{
+	res := &UserCreateResponse{
 		Token: user.Token,
 	}
 	if err := json.NewEncoder(w).Encode(res); err != nil {
@@ -70,7 +91,7 @@ func (c *UserController) UserGetHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// レスポンスを返却
-	res := &models.UserGetResponse{
+	res := &UserGetResponse{
 		Name: user.Name,
 	}
 	if err := json.NewEncoder(w).Encode(res); err != nil {
@@ -87,7 +108,7 @@ func (c *UserController) UserUpdateHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	// リクエストボディをパース
-	req := &models.UserUpdateRequest{}
+	req := &UserUpdateRequest{}
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
