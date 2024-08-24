@@ -6,25 +6,29 @@ import (
 
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/api/middleware"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/controllers"
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/repositories"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/services"
 )
 
 func NewRouter(db *sql.DB) *http.ServeMux {
 
-	// sevicesのインスタンスを生成
-	ser := services.NewMyAppService(db)
+	// userRepositoryのインスタンスを生成
+	uRep := repositories.NewUserRepository(db)
 
-	// コントローラのインスタンスを生成
-	uc := controllers.NewUserController(ser)
+	// userServiceのインスタンスを生成
+	uSer := services.NewUserService(uRep)
+
+	// userControllerのインスタンスを生成
+	uCon := controllers.NewUserController(uSer)
 
 	// register routes
 	mux := http.NewServeMux()
 
 	// ルーティングの設定
-	mux.Handle("/user/create", http.HandlerFunc(uc.UserCreateHandler))
+	mux.Handle("/user/create", http.HandlerFunc(uCon.UserCreateHandler))
 	// /user/getと/user/updateではX-Tokenが必要なのでmiddlewareを適用
-	mux.Handle("/user/get", middleware.XTokenAuthMiddleware(http.HandlerFunc(uc.UserGetHandler), db))
-	mux.Handle("/user/update", middleware.XTokenAuthMiddleware(http.HandlerFunc(uc.UserUpdateHandler), db))
+	mux.Handle("/user/get", middleware.XTokenAuthMiddleware(http.HandlerFunc(uCon.UserGetHandler), uRep))
+	mux.Handle("/user/update", middleware.XTokenAuthMiddleware(http.HandlerFunc(uCon.UserUpdateHandler), uRep))
 
 	return mux
 }
