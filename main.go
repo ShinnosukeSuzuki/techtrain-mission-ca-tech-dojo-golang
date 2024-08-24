@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
 
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/api"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/db"
 	_ "github.com/go-sql-driver/mysql"
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
@@ -41,11 +41,11 @@ func main() {
 		Handler: r,
 	}
 
-	var wg sync.WaitGroup
+	// errgroupを作成
+	g, ctx := errgroup.WithContext(ctx)
 
-	wg.Add(1)
-
-	go func() {
+	// シグナルを受け取り、サーバーをシャットダウンするゴルーチンをerrgroupで実行
+	g.Go(func() error {
 		// シグナルを受け取るまで待機
 		<-ctx.Done()
 
@@ -55,10 +55,10 @@ func main() {
 
 		// サーバーをシャットダウン(新しい接続の受け付けを停止し、contextがキャンセルされたら終了する)
 		if err := srv.Shutdown(ctx); err != nil {
-			log.Fatalf("Shutdown(): %v", err)
+			return err
 		}
-		defer wg.Done()
-	}()
+		return nil
+	})
 
 	log.Println("server start at :8080")
 	// 正常にシャットダウンした場合はhttp.ErrServerClosedが返る
@@ -66,6 +66,9 @@ func main() {
 		log.Fatalf("ListenAndServe(): %v", err)
 	}
 
-	wg.Wait()
+	// サーバーがシャットダウンされるゴルーチンが終了するまで待機
+	if err := g.Wait(); err != nil {
+		log.Fatalf("g.Wait(): %v", err)
+	}
 
 }
