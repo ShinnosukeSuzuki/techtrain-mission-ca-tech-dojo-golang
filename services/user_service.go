@@ -1,8 +1,8 @@
 package services
 
 import (
-	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/common"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/pkg"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/repositories"
 )
 
@@ -21,7 +21,7 @@ func NewUserService(r repositories.UserRepository) *UserService {
 func (s *UserService) UserCreateService(name string) (models.User, error) {
 
 	// tokenを生成
-	token := common.GenerateToken()
+	token := pkg.GenerateUUID()
 
 	// ユーザーを作成
 	newUser, err := s.repository.CreateUser(name, token)

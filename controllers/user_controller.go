@@ -2,10 +2,11 @@ package controllers
 
 import (
 	"encoding/json"
+
 	"net/http"
 
-	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/common"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/controllers/services"
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/pkg/token"
 )
 
 // User用のコントローラ構造体
@@ -81,7 +82,7 @@ func (c *UserController) UserGetHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// X-Tokenをcontextから取得
-	xToken := common.GetToken(r)
+	xToken := token.GetToken(r)
 
 	// X-Tokenを持つユーザーを取得
 	user, err := c.service.UserGetService(xToken)
@@ -115,7 +116,7 @@ func (c *UserController) UserUpdateHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	// X-Tokenをcontextから取得
-	xToken := common.GetToken(r)
+	xToken := token.GetToken(r)
 
 	// ユーザーのnameを更新
 	if err := c.service.UserUpdateService(xToken, req.Name); err != nil {

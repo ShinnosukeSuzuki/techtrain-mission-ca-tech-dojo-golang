@@ -1,17 +1,9 @@
-package common
+package token
 
 import (
 	"context"
 	"net/http"
-
-	"github.com/google/uuid"
 )
-
-// tokenをUUIDとして生成する
-func GenerateToken() string {
-	token := uuid.New()
-	return token.String()
-}
 
 // contextにtokenを保存するための型
 type TokenType struct{}

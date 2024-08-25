@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/common"
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/pkg/token"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/repositories"
 )
 
@@ -24,7 +24,7 @@ func XTokenAuthMiddleware(h http.Handler, rep repositories.UserRepository) http.
 		}
 
 		// X-Tokenをcontextに保存
-		r = common.SetToken(r, xToken)
+		r = token.SetToken(r, xToken)
 		h.ServeHTTP(w, r)
 
 	}
