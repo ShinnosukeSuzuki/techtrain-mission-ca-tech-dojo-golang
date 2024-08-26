@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/controllers/services"
-	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/pkg/token"
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/token"
 )
 
 // User用のコントローラ構造体
@@ -18,28 +18,6 @@ type UserController struct {
 func NewUserController(s services.UserServicer) *UserController {
 	return &UserController{service: s}
 }
-
-// ユーザーのリクエスト・レスポンスボディを定義
-type (
-	// /user/createのリクエストボディ
-	UserCreateRequest struct {
-		Name string `json:"name"`
-	}
-	// /user/createのレスポンスボディ
-	UserCreateResponse struct {
-		Token string `json:"token"`
-	}
-
-	// /user/getのレスポンスボディ
-	UserGetResponse struct {
-		Name string `json:"name"`
-	}
-
-	// /user/updateのリクエストボディ
-	UserUpdateRequest struct {
-		Name string `json:"name"`
-	}
-)
 
 // ハンドラーメソッドを定義
 // POST /user/create
