@@ -2,7 +2,7 @@ package services
 
 import (
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
-	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/pkg"
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/pkg/uuid"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/repositories"
 )
 
@@ -20,10 +20,8 @@ func NewUserService(r repositories.UserRepository) *UserService {
 // ハンドラー UserCreateHandler 用のサービスメソッド
 func (s *UserService) UserCreateService(name string) (models.User, error) {
 
-	// tokenを生成
-	token := pkg.GenerateUUID()
+	token := uuid.GenerateUUID()
 
-	// ユーザーを作成
 	newUser, err := s.repository.CreateUser(name, token)
 	if err != nil {
 		return models.User{}, err
@@ -35,7 +33,6 @@ func (s *UserService) UserCreateService(name string) (models.User, error) {
 // ハンドラー UserGetHandler 用のサービスメソッド
 func (s *UserService) UserGetService(token string) (models.User, error) {
 
-	// tokenを持つユーザーを取得
 	user, err := s.repository.GetUserByToken(token)
 	if err != nil {
 		return models.User{}, err
@@ -47,7 +44,6 @@ func (s *UserService) UserGetService(token string) (models.User, error) {
 // ハンドラー UserUpdateHandler 用のサービスメソッド
 func (s *UserService) UserUpdateService(token string, name string) error {
 
-	// tokenを持つユーザーのnameを更新
 	err := s.repository.UpdateUserNameByToken(token, name)
 	if err != nil {
 		return err

@@ -5,8 +5,8 @@ import (
 
 	"net/http"
 
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/api/middleware"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/controllers/services"
-	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/token"
 )
 
 // User用のコントローラ構造体
@@ -27,21 +27,19 @@ func (c *UserController) UserCreateHandler(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	// リクエストボディをパース
+
 	req := &UserCreateRequest{}
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// ユーザーを作成
 	user, err := c.service.UserCreateService(req.Name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// レスポンスを返却
 	res := &UserCreateResponse{
 		Token: user.Token,
 	}
@@ -59,20 +57,18 @@ func (c *UserController) UserGetHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// X-Tokenをcontextから取得
-	xToken := token.GetToken(r)
+	xToken, _ := r.Context().Value(middleware.TokenType{}).(string)
 
-	// X-Tokenを持つユーザーを取得
 	user, err := c.service.UserGetService(xToken)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// レスポンスを返却
 	res := &UserGetResponse{
 		Name: user.Name,
 	}
+
 	if err := json.NewEncoder(w).Encode(res); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -86,22 +82,19 @@ func (c *UserController) UserUpdateHandler(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	// リクエストボディをパース
+
 	req := &UserUpdateRequest{}
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	// X-Tokenをcontextから取得
-	xToken := token.GetToken(r)
+	xToken, _ := r.Context().Value(middleware.TokenType{}).(string)
 
-	// ユーザーのnameを更新
 	if err := c.service.UserUpdateService(xToken, req.Name); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// レスポンスを返却(200を返すだけ)
 	w.WriteHeader(http.StatusOK)
 }

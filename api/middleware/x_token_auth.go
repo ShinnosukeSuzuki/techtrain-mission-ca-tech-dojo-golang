@@ -1,11 +1,14 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 
-	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/pkg/token"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/repositories"
 )
+
+// contextにtokenを保存するための型
+type TokenType struct{}
 
 func XTokenAuthMiddleware(h http.Handler, rep repositories.UserRepository) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
@@ -23,8 +26,8 @@ func XTokenAuthMiddleware(h http.Handler, rep repositories.UserRepository) http.
 			return
 		}
 
-		// X-Tokenをcontextに保存
-		r = token.SetToken(r, xToken)
+		ctx := context.WithValue(r.Context(), TokenType{}, xToken)
+		r = r.WithContext(ctx)
 		h.ServeHTTP(w, r)
 
 	}
