@@ -23,15 +23,16 @@ func (r *UserRepository) CreateUser(name string, token string) (models.User, err
 		VALUES (?, ?);
 	`
 
-	var newUser models.User
-	newUser.Name = name
-	newUser.Token = token
-	result, err := r.db.Exec(sqlInsertUser, newUser.Name, newUser.Token)
+	result, err := r.db.Exec(sqlInsertUser, name, token)
 	if err != nil {
 		return models.User{}, err
 	}
 	id, _ := result.LastInsertId()
+
+	var newUser models.User
 	newUser.ID = int(id)
+	newUser.Name = name
+	newUser.Token = token
 
 	return newUser, nil
 }
