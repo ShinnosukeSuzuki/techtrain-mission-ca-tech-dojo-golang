@@ -39,7 +39,7 @@ func (r *UserRepository) CreateUser(name string, token string) (models.User, err
 // tokenからユーザーを取得する
 func (r *UserRepository) GetUserByToken(token string) (models.User, error) {
 	const sqlSelectUserByToken = `
-		SELECT *
+		SELECT id, name, token
 		FROM users
 		WHERE token = ?;
 	`
