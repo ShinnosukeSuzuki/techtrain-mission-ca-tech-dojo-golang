@@ -20,9 +20,10 @@ func NewUserService(r repositories.UserRepository) *UserService {
 // ハンドラー UserCreateHandler 用のサービスメソッド
 func (s *UserService) UserCreateService(name string) (models.User, error) {
 
+	id := uuid.GenerateUUID()
 	token := uuid.GenerateUUID()
 
-	newUser, err := s.repository.CreateUser(name, token)
+	newUser, err := s.repository.CreateUser(id, name, token)
 	if err != nil {
 		return models.User{}, err
 	}
