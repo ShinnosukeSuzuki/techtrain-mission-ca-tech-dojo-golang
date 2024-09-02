@@ -17,20 +17,19 @@ func NewUserRepository(db *sql.DB) UserRepository {
 }
 
 // nameとtokenから新規ユーザーを作成する
-func (r *UserRepository) CreateUser(name string, token string) (models.User, error) {
+func (r *UserRepository) CreateUser(id, name, token string) (models.User, error) {
 	const sqlInsertUser = `
-		INSERT INTO users (name, token)
-		VALUES (?, ?);
+		INSERT INTO users (id, name, token)
+		VALUES (?, ?, ?);
 	`
 
-	result, err := r.db.Exec(sqlInsertUser, name, token)
+	_, err := r.db.Exec(sqlInsertUser, id, name, token)
 	if err != nil {
 		return models.User{}, err
 	}
-	id, _ := result.LastInsertId()
 
 	var newUser models.User
-	newUser.ID = int(id)
+	newUser.ID = id
 	newUser.Name = name
 	newUser.Token = token
 
@@ -55,7 +54,7 @@ func (r *UserRepository) GetUserByToken(token string) (models.User, error) {
 }
 
 // tokenが一致するユーザーのnameを更新する
-func (r *UserRepository) UpdateUserNameByToken(token string, name string) error {
+func (r *UserRepository) UpdateUserNameByToken(token, name string) error {
 	const sqlUpdateUserNameByToken = `
 		UPDATE users
 		SET name = ?
