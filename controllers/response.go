@@ -1,6 +1,7 @@
 package controllers
 
-// ユーザーのレスポンスボディを定義
+import "github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
+
 type (
 	// /user/create
 	UserCreateResponse struct {
@@ -10,5 +11,10 @@ type (
 	// /user/get
 	UserGetResponse struct {
 		Name string `json:"name"`
+	}
+
+	// /character/list
+	CharacterListResponse struct {
+		Characters []models.UserCharacter `json:"characters"`
 	}
 )
