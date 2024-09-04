@@ -8,3 +8,8 @@ type UserRepository interface {
 	GetUserByToken(token string) (models.User, error)
 	UpdateUserNameByToken(token string, name string) error
 }
+
+// UserCharacter関連を引き受けるリポジトリインターフェース
+type UserCharacterRepository interface {
+	GetUserCharacterList(token string) ([]models.UserCharacter, error)
+}
