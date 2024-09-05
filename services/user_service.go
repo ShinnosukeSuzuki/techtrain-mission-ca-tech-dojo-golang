@@ -9,21 +9,21 @@ import (
 // サービス構造体を定義
 type UserService struct {
 	// userRepositoryを埋め込む
-	repository repositories.UserRepository
+	uRep repositories.UserRepository
 }
 
 // サービスのコンストラクタ
 func NewUserService(r repositories.UserRepository) *UserService {
-	return &UserService{repository: r}
+	return &UserService{uRep: r}
 }
 
-// ハンドラー UserCreateHandler 用のサービスメソッド
-func (s *UserService) UserCreateService(name string) (models.User, error) {
+// ハンドラー CreateHandler 用のサービスメソッド
+func (s *UserService) Create(name string) (models.User, error) {
 
 	id := uuid.GenerateUUID()
 	token := uuid.GenerateUUID()
 
-	newUser, err := s.repository.CreateUser(id, name, token)
+	newUser, err := s.uRep.Create(id, name, token)
 	if err != nil {
 		return models.User{}, err
 	}
@@ -31,10 +31,10 @@ func (s *UserService) UserCreateService(name string) (models.User, error) {
 	return newUser, nil
 }
 
-// ハンドラー UserGetHandler 用のサービスメソッド
-func (s *UserService) UserGetService(token string) (models.User, error) {
+// ハンドラー GetHandler 用のサービスメソッド
+func (s *UserService) Get(userId string) (models.User, error) {
 
-	user, err := s.repository.GetUserByToken(token)
+	user, err := s.uRep.GetById(userId)
 	if err != nil {
 		return models.User{}, err
 	}
@@ -42,10 +42,10 @@ func (s *UserService) UserGetService(token string) (models.User, error) {
 	return user, nil
 }
 
-// ハンドラー UserUpdateHandler 用のサービスメソッド
-func (s *UserService) UserUpdateService(token string, name string) error {
+// ハンドラー UpdateNameHandler 用のサービスメソッド
+func (s *UserService) UpdateName(userId, name string) error {
 
-	err := s.repository.UpdateUserNameByToken(token, name)
+	err := s.uRep.UpdateName(userId, name)
 	if err != nil {
 		return err
 	}
