@@ -39,7 +39,7 @@ func (c *UserCharacterController) UserCharacterGetHandler(w http.ResponseWriter,
 		return
 	}
 
-	if characters.Characters == nil {
+	if len(characters.Characters) == 0 {
 		characters.Characters = []models.UserCharacter{}
 	}
 
