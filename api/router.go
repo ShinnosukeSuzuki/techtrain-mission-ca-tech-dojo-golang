@@ -25,10 +25,10 @@ func NewRouter(db *sql.DB) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// ルーティングの設定
-	mux.Handle("/user/create", middleware.JSONContentTypeMiddleware(http.HandlerFunc(uCon.UserCreateHandler)))
+	mux.Handle("/user/create", middleware.JSONContentTypeMiddleware(http.HandlerFunc(uCon.CreateHandler)))
 	// /user/getと/user/updateではX-Tokenが必要なのでmiddlewareを適用
-	mux.Handle("/user/get", middleware.XTokenAuthMiddleware(middleware.JSONContentTypeMiddleware(http.HandlerFunc(uCon.UserGetHandler)), uRep))
-	mux.Handle("/user/update", middleware.XTokenAuthMiddleware(http.HandlerFunc(uCon.UserUpdateHandler), uRep))
+	mux.Handle("/user/get", middleware.XTokenAuthMiddleware(middleware.JSONContentTypeMiddleware(http.HandlerFunc(uCon.GetHandler)), uRep))
+	mux.Handle("/user/update", middleware.XTokenAuthMiddleware(http.HandlerFunc(uCon.UpdateNameHandler), uRep))
 
 	return mux
 }
