@@ -7,8 +7,8 @@ import (
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/repositories"
 )
 
-// contextにtokenを保存するための型
-type TokenType struct{}
+// contextに格納するUserIDのキー
+type UserIDKeyType struct{}
 
 func XTokenAuthMiddleware(h http.Handler, rep repositories.UserRepository) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +26,8 @@ func XTokenAuthMiddleware(h http.Handler, rep repositories.UserRepository) http.
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), TokenType{}, xToken)
+		// contextにUserIDを格納
+		ctx := context.WithValue(r.Context(), UserIDKeyType{}, user.ID)
 		r = r.WithContext(ctx)
 		h.ServeHTTP(w, r)
 

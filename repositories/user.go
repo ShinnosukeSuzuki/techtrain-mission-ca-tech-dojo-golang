@@ -53,15 +53,32 @@ func (r *UserRepository) GetUserByToken(token string) (models.User, error) {
 	return user, nil
 }
 
-// tokenが一致するユーザーのnameを更新する
-func (r *UserRepository) UpdateUserNameByToken(token, name string) error {
+// idからユーザーを取得する
+func (r *UserRepository) GetUserById(userId string) (models.User, error) {
+	const sqlSelectUserById = `
+		SELECT id, name, token
+		FROM users
+		WHERE id = ?;
+	`
+
+	var user models.User
+	err := r.db.QueryRow(sqlSelectUserById, userId).Scan(&user.ID, &user.Name, &user.Token)
+	if err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
+}
+
+// userIdが一致するユーザーのnameを更新する
+func (r *UserRepository) UpdateUserName(userId, name string) error {
 	const sqlUpdateUserNameByToken = `
 		UPDATE users
 		SET name = ?
-		WHERE token = ?;
+		WHERE id = ?;
 	`
 
-	_, err := r.db.Exec(sqlUpdateUserNameByToken, name, token)
+	_, err := r.db.Exec(sqlUpdateUserNameByToken, name, userId)
 	if err != nil {
 		return err
 	}

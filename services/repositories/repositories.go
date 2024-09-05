@@ -6,5 +6,6 @@ import "github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models
 type UserRepository interface {
 	CreateUser(name string, token string) (models.User, error)
 	GetUserByToken(token string) (models.User, error)
-	UpdateUserNameByToken(token string, name string) error
+	GetUserById(userId string) (models.User, error)
+	UpdateUserName(userId, name string) error
 }

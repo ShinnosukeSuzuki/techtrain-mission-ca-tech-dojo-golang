@@ -32,9 +32,9 @@ func (s *UserService) UserCreateService(name string) (models.User, error) {
 }
 
 // ハンドラー UserGetHandler 用のサービスメソッド
-func (s *UserService) UserGetService(token string) (models.User, error) {
+func (s *UserService) UserGetService(userId string) (models.User, error) {
 
-	user, err := s.repository.GetUserByToken(token)
+	user, err := s.repository.GetUserById(userId)
 	if err != nil {
 		return models.User{}, err
 	}
@@ -43,9 +43,9 @@ func (s *UserService) UserGetService(token string) (models.User, error) {
 }
 
 // ハンドラー UserUpdateHandler 用のサービスメソッド
-func (s *UserService) UserUpdateService(token string, name string) error {
+func (s *UserService) UserUpdateService(userId, name string) error {
 
-	err := s.repository.UpdateUserNameByToken(token, name)
+	err := s.repository.UpdateUserName(userId, name)
 	if err != nil {
 		return err
 	}

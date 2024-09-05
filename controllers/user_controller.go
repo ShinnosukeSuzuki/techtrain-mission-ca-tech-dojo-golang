@@ -57,9 +57,9 @@ func (c *UserController) UserGetHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	xToken, _ := r.Context().Value(middleware.TokenType{}).(string)
+	userId, _ := r.Context().Value(middleware.UserIDKeyType{}).(string)
 
-	user, err := c.service.UserGetService(xToken)
+	user, err := c.service.UserGetService(userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -89,9 +89,9 @@ func (c *UserController) UserUpdateHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	xToken, _ := r.Context().Value(middleware.TokenType{}).(string)
+	userId, _ := r.Context().Value(middleware.UserIDKeyType{}).(string)
 
-	if err := c.service.UserUpdateService(xToken, req.Name); err != nil {
+	if err := c.service.UserUpdateService(userId, req.Name); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
