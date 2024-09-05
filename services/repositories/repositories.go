@@ -12,5 +12,5 @@ type UserRepository interface {
 
 // UserCharacter関連を引き受けるリポジトリインターフェース
 type UserCharacterRepository interface {
-	GetUserCharacterList(token string) ([]models.UserCharacter, error)
+	GetUserCharacterList(userId string) ([]models.UserCharacter, error)
 }

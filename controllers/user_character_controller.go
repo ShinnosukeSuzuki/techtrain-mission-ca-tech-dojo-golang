@@ -30,10 +30,10 @@ func (c *UserCharacterController) UserCharacterGetHandler(w http.ResponseWriter,
 		return
 	}
 
-	xToken, _ := r.Context().Value(middleware.TokenType{}).(string)
+	userId, _ := r.Context().Value(middleware.UserIDKeyType{}).(string)
 
-	// xTokenを元に一致するユーザーのキャラクターを取得
-	characters, err := c.service.UserCharacterGetService(xToken)
+	// userIdを元に一致するユーザーのキャラクターを取得
+	characters, err := c.service.UserCharacterGetService(userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

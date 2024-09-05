@@ -11,5 +11,5 @@ type UserServicer interface {
 
 // UserCharacter関連を引き受けるサービス
 type UserCharacterServicer interface {
-	UserCharacterGetService(token string) (models.CharacterList, error)
+	UserCharacterGetService(userId string) (models.CharacterList, error)
 }

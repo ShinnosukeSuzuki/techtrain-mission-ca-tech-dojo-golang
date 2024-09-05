@@ -16,17 +16,16 @@ func NewUserCharacterRepository(db *sql.DB) UserCharacterRepository {
 	return UserCharacterRepository{db: db}
 }
 
-// userのtokenに一致するキャラクターを取得する
-func (r *UserCharacterRepository) GetUserCharacterList(token string) ([]models.UserCharacter, error) {
+// userのidに一致するキャラクターを取得する
+func (r *UserCharacterRepository) GetUserCharacterList(userId string) ([]models.UserCharacter, error) {
 	const sqlSelectCharacterByUserID = `
-		SELECT users_characters.id, users_characters.character_id, characters.name
-		FROM users_characters
-		JOIN users ON users_characters.user_id = users.id
-		JOIN characters ON users_characters.character_id = characters.id
-		WHERE users.token = ?;
+		SELECT uc.id, uc.character_id, c.name
+		FROM users_characters as uc
+		JOIN characters as c ON uc.character_id = c.id
+		WHERE uc.user_id = ?;
 	`
 
-	rows, err := r.db.Query(sqlSelectCharacterByUserID, token)
+	rows, err := r.db.Query(sqlSelectCharacterByUserID, userId)
 	if err != nil {
 		return nil, err
 	}
