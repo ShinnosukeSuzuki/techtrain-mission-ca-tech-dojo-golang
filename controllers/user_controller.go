@@ -11,17 +11,17 @@ import (
 
 // User用のコントローラ構造体
 type UserController struct {
-	service services.UserServicer
+	uSer services.UserServicer
 }
 
 // コンストラクタ関数
 func NewUserController(s services.UserServicer) *UserController {
-	return &UserController{service: s}
+	return &UserController{uSer: s}
 }
 
 // ハンドラーメソッドを定義
 // POST /user/create
-func (c *UserController) UserCreateHandler(w http.ResponseWriter, r *http.Request) {
+func (c *UserController) CreateHandler(w http.ResponseWriter, r *http.Request) {
 	// POST以外のリクエストはエラー
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -34,7 +34,7 @@ func (c *UserController) UserCreateHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	user, err := c.service.UserCreateService(req.Name)
+	user, err := c.uSer.Create(req.Name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -50,7 +50,7 @@ func (c *UserController) UserCreateHandler(w http.ResponseWriter, r *http.Reques
 }
 
 // GET /user/get
-func (c *UserController) UserGetHandler(w http.ResponseWriter, r *http.Request) {
+func (c *UserController) GetHandler(w http.ResponseWriter, r *http.Request) {
 	// GET以外のリクエストはエラー
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -59,7 +59,7 @@ func (c *UserController) UserGetHandler(w http.ResponseWriter, r *http.Request) 
 
 	userId, _ := r.Context().Value(middleware.UserIDKeyType{}).(string)
 
-	user, err := c.service.UserGetService(userId)
+	user, err := c.uSer.Get(userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -76,7 +76,7 @@ func (c *UserController) UserGetHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 // PUT /user/update
-func (c *UserController) UserUpdateHandler(w http.ResponseWriter, r *http.Request) {
+func (c *UserController) UpdateNameHandler(w http.ResponseWriter, r *http.Request) {
 	// PUT以外のリクエストはエラー
 	if r.Method != http.MethodPut {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -91,7 +91,7 @@ func (c *UserController) UserUpdateHandler(w http.ResponseWriter, r *http.Reques
 
 	userId, _ := r.Context().Value(middleware.UserIDKeyType{}).(string)
 
-	if err := c.service.UserUpdateService(userId, req.Name); err != nil {
+	if err := c.uSer.UpdateName(userId, req.Name); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

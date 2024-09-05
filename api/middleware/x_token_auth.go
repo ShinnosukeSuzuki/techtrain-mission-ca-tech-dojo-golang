@@ -10,7 +10,7 @@ import (
 // contextに格納するUserIDのキー
 type UserIDKeyType struct{}
 
-func XTokenAuthMiddleware(h http.Handler, rep repositories.UserRepository) http.Handler {
+func XTokenAuthMiddleware(h http.Handler, uRep repositories.UserRepository) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		// リクエストヘッダーからX-Tokenを取得
 		xToken := r.Header.Get("X-Token")
@@ -20,7 +20,7 @@ func XTokenAuthMiddleware(h http.Handler, rep repositories.UserRepository) http.
 		}
 
 		// 取得したX-Tokenを持つユーザーが存在するか確認
-		user, err := rep.GetUserByToken(xToken)
+		user, err := uRep.GetByToken(xToken)
 		if err != nil || user.Token == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return

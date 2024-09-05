@@ -17,7 +17,7 @@ func NewUserRepository(db *sql.DB) UserRepository {
 }
 
 // nameとtokenから新規ユーザーを作成する
-func (r *UserRepository) CreateUser(id, name, token string) (models.User, error) {
+func (r *UserRepository) Create(id, name, token string) (models.User, error) {
 	const sqlInsertUser = `
 		INSERT INTO users (id, name, token)
 		VALUES (?, ?, ?);
@@ -37,7 +37,7 @@ func (r *UserRepository) CreateUser(id, name, token string) (models.User, error)
 }
 
 // tokenからユーザーを取得する
-func (r *UserRepository) GetUserByToken(token string) (models.User, error) {
+func (r *UserRepository) GetByToken(token string) (models.User, error) {
 	const sqlSelectUserByToken = `
 		SELECT id, name, token
 		FROM users
@@ -54,7 +54,7 @@ func (r *UserRepository) GetUserByToken(token string) (models.User, error) {
 }
 
 // idからユーザーを取得する
-func (r *UserRepository) GetUserById(userId string) (models.User, error) {
+func (r *UserRepository) GetById(userId string) (models.User, error) {
 	const sqlSelectUserById = `
 		SELECT id, name, token
 		FROM users
@@ -71,7 +71,7 @@ func (r *UserRepository) GetUserById(userId string) (models.User, error) {
 }
 
 // userIdが一致するユーザーのnameを更新する
-func (r *UserRepository) UpdateUserName(userId, name string) error {
+func (r *UserRepository) UpdateName(userId, name string) error {
 	const sqlUpdateUserNameByToken = `
 		UPDATE users
 		SET name = ?
