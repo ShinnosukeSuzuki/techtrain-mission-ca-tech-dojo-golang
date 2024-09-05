@@ -17,7 +17,7 @@ func NewUserCharacterRepository(db *sql.DB) UserCharacterRepository {
 }
 
 // userのidに一致するキャラクターを取得する
-func (r *UserCharacterRepository) GetUserCharacterList(userId string) ([]models.UserCharacter, error) {
+func (r *UserCharacterRepository) GetList(userId string) ([]models.UserCharacter, error) {
 	const sqlSelectCharacterByUserID = `
 		SELECT uc.id, uc.character_id, c.name
 		FROM users_characters as uc

@@ -8,17 +8,17 @@ import (
 // サービス構造体を定義
 type UserCharacterService struct {
 	// userRepositoryを埋め込む
-	repository repositories.UserCharacterRepository
+	ucRep repositories.UserCharacterRepository
 }
 
 // サービスのコンストラクタ
 func NewUserCharacterService(r repositories.UserCharacterRepository) *UserCharacterService {
-	return &UserCharacterService{repository: r}
+	return &UserCharacterService{ucRep: r}
 }
 
-// ハンドラー UserCharacterGetHandler 用のサービスメソッド
-func (s *UserCharacterService) UserCharacterGetService(userId string) (models.CharacterList, error) {
-	userCharacters, err := s.repository.GetUserCharacterList(userId)
+// ハンドラー GetListHandler 用のサービスメソッド
+func (s *UserCharacterService) List(userId string) (models.CharacterList, error) {
+	userCharacters, err := s.ucRep.GetList(userId)
 	if err != nil {
 		return models.CharacterList{}, err
 	}

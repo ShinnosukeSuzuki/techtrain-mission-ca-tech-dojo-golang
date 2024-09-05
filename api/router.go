@@ -32,7 +32,7 @@ func NewRouter(db *sql.DB) *http.ServeMux {
 	mux.Handle("/user/update", middleware.XTokenAuthMiddleware(http.HandlerFunc(uCon.UpdateNameHandler), uRep))
 
 	// /character/listではX-Tokenが必要なのでmiddlewareを適用
-	mux.Handle("/character/list", middleware.XTokenAuthMiddleware(middleware.JSONContentTypeMiddleware(http.HandlerFunc(ucCon.UserCharacterGetHandler)), uRep))
+	mux.Handle("/character/list", middleware.XTokenAuthMiddleware(middleware.JSONContentTypeMiddleware(http.HandlerFunc(ucCon.GetListHandler)), uRep))
 
 	return mux
 }

@@ -23,7 +23,7 @@ func NewUserCharacterController(s services.UserCharacterServicer) *UserCharacter
 // ハンドラーメソッドを定義
 
 // GET /character/list
-func (c *UserCharacterController) UserCharacterGetHandler(w http.ResponseWriter, r *http.Request) {
+func (c *UserCharacterController) GetListHandler(w http.ResponseWriter, r *http.Request) {
 	// GET以外のリクエストはエラー
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -32,19 +32,19 @@ func (c *UserCharacterController) UserCharacterGetHandler(w http.ResponseWriter,
 
 	userId, _ := r.Context().Value(middleware.UserIDKeyType{}).(string)
 
-	// userIdを元に一致するユーザーのキャラクターを取得
-	characters, err := c.service.UserCharacterGetService(userId)
+	// userIdを元に一致するユーザーが所持するキャラクターを取得
+	characterList, err := c.service.List(userId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if len(characters.Characters) == 0 {
-		characters.Characters = []models.UserCharacter{}
+	if len(characterList.Characters) == 0 {
+		characterList.Characters = []models.UserCharacter{}
 	}
 
 	res := &CharacterListResponse{
-		Characters: characters.Characters,
+		Characters: characterList.Characters,
 	}
 
 	if err := json.NewEncoder(w).Encode(res); err != nil {
