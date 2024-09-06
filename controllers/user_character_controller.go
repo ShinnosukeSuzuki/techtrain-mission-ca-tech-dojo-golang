@@ -43,8 +43,17 @@ func (c *UserCharacterController) GetListHandler(w http.ResponseWriter, r *http.
 		characterList.Characters = []models.UserCharacter{}
 	}
 
+	characters := make([]UserCharacter, 0, len(characterList.Characters))
+	for _, character := range characterList.Characters {
+		characters = append(characters, UserCharacter{
+			UserCharacterID: character.UserCharacterID,
+			CharacterID:     character.CharacterID,
+			Name:            character.Name,
+		})
+	}
+
 	res := &CharacterListResponse{
-		Characters: characterList.Characters,
+		Characters: characters,
 	}
 
 	if err := json.NewEncoder(w).Encode(res); err != nil {

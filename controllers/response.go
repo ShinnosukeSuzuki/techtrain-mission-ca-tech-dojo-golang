@@ -1,7 +1,5 @@
 package controllers
 
-import "github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
-
 type (
 	// /user/create
 	UserCreateResponse struct {
@@ -14,7 +12,12 @@ type (
 	}
 
 	// /character/list
+	UserCharacter struct {
+		UserCharacterID string `json:"userCharacterID"`
+		CharacterID     string `json:"characterID"`
+		Name            string `json:"name"`
+	}
 	CharacterListResponse struct {
-		Characters []models.UserCharacter `json:"characters"`
+		Characters []UserCharacter `json:"characters"`
 	}
 )
