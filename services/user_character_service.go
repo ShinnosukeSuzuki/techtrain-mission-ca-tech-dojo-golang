@@ -7,7 +7,7 @@ import (
 
 // サービス構造体を定義
 type UserCharacterService struct {
-	// userRepositoryを埋め込む
+	// UserCharacterRepositoryを埋め込む
 	ucRep repositories.UserCharacterRepository
 }
 
