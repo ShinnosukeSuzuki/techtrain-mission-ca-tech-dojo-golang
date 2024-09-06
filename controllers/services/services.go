@@ -8,3 +8,8 @@ type UserServicer interface {
 	Get(userId string) (models.User, error)
 	UpdateName(userId, name string) error
 }
+
+// UserCharacter関連を引き受けるサービス
+type UserCharacterServicer interface {
+	List(userId string) (models.CharacterList, error)
+}

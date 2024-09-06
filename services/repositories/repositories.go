@@ -9,3 +9,8 @@ type UserRepository interface {
 	GetById(userId string) (models.User, error)
 	UpdateName(userId, name string) error
 }
+
+// UserCharacter関連を引き受けるリポジトリインターフェース
+type UserCharacterRepository interface {
+	GetList(userId string) ([]models.UserCharacter, error)
+}

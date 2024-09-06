@@ -1,6 +1,5 @@
 package controllers
 
-// ユーザーのレスポンスボディを定義
 type (
 	// /user/create
 	UserCreateResponse struct {
@@ -10,5 +9,15 @@ type (
 	// /user/get
 	UserGetResponse struct {
 		Name string `json:"name"`
+	}
+
+	// /character/list
+	UserCharacter struct {
+		UserCharacterID string `json:"userCharacterID"`
+		CharacterID     string `json:"characterID"`
+		Name            string `json:"name"`
+	}
+	CharacterListResponse struct {
+		Characters []UserCharacter `json:"characters"`
 	}
 )

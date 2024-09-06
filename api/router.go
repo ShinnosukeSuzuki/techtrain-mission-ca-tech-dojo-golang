@@ -12,14 +12,15 @@ import (
 
 func NewRouter(db *sql.DB) *http.ServeMux {
 
-	// userRepositoryのインスタンスを生成
+	// user関連
 	uRep := repositories.NewUserRepository(db)
-
-	// userServiceのインスタンスを生成
 	uSer := services.NewUserService(uRep)
-
-	// userControllerのインスタンスを生成
 	uCon := controllers.NewUserController(uSer)
+
+	// user_character関連
+	ucRep := repositories.NewUserCharacterRepository(db)
+	ucSer := services.NewUserCharacterService(ucRep)
+	ucCon := controllers.NewUserCharacterController(ucSer)
 
 	// register routes
 	mux := http.NewServeMux()
@@ -29,6 +30,9 @@ func NewRouter(db *sql.DB) *http.ServeMux {
 	// /user/getと/user/updateではX-Tokenが必要なのでmiddlewareを適用
 	mux.Handle("/user/get", middleware.XTokenAuthMiddleware(middleware.JSONContentTypeMiddleware(http.HandlerFunc(uCon.GetHandler)), uRep))
 	mux.Handle("/user/update", middleware.XTokenAuthMiddleware(http.HandlerFunc(uCon.UpdateNameHandler), uRep))
+
+	// /character/listではX-Tokenが必要なのでmiddlewareを適用
+	mux.Handle("/character/list", middleware.XTokenAuthMiddleware(middleware.JSONContentTypeMiddleware(http.HandlerFunc(ucCon.GetListHandler)), uRep))
 
 	return mux
 }

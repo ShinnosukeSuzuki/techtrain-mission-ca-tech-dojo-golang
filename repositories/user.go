@@ -18,12 +18,12 @@ func NewUserRepository(db *sql.DB) UserRepository {
 
 // nameとtokenから新規ユーザーを作成する
 func (r *UserRepository) Create(id, name, token string) (models.User, error) {
-	const sqlInsertUser = `
+	const query = `
 		INSERT INTO users (id, name, token)
 		VALUES (?, ?, ?);
 	`
 
-	_, err := r.db.Exec(sqlInsertUser, id, name, token)
+	_, err := r.db.Exec(query, id, name, token)
 	if err != nil {
 		return models.User{}, err
 	}
@@ -38,14 +38,14 @@ func (r *UserRepository) Create(id, name, token string) (models.User, error) {
 
 // tokenからユーザーを取得する
 func (r *UserRepository) GetByToken(token string) (models.User, error) {
-	const sqlSelectUserByToken = `
+	const query = `
 		SELECT id, name, token
 		FROM users
 		WHERE token = ?;
 	`
 
 	var user models.User
-	err := r.db.QueryRow(sqlSelectUserByToken, token).Scan(&user.ID, &user.Name, &user.Token)
+	err := r.db.QueryRow(query, token).Scan(&user.ID, &user.Name, &user.Token)
 	if err != nil {
 		return models.User{}, err
 	}
@@ -55,14 +55,14 @@ func (r *UserRepository) GetByToken(token string) (models.User, error) {
 
 // idからユーザーを取得する
 func (r *UserRepository) GetById(userId string) (models.User, error) {
-	const sqlSelectUserById = `
+	const query = `
 		SELECT id, name, token
 		FROM users
 		WHERE id = ?;
 	`
 
 	var user models.User
-	err := r.db.QueryRow(sqlSelectUserById, userId).Scan(&user.ID, &user.Name, &user.Token)
+	err := r.db.QueryRow(query, userId).Scan(&user.ID, &user.Name, &user.Token)
 	if err != nil {
 		return models.User{}, err
 	}
@@ -72,13 +72,13 @@ func (r *UserRepository) GetById(userId string) (models.User, error) {
 
 // userIdが一致するユーザーのnameを更新する
 func (r *UserRepository) UpdateName(userId, name string) error {
-	const sqlUpdateUserNameByToken = `
+	const query = `
 		UPDATE users
 		SET name = ?
 		WHERE id = ?;
 	`
 
-	_, err := r.db.Exec(sqlUpdateUserNameByToken, name, userId)
+	_, err := r.db.Exec(query, name, userId)
 	if err != nil {
 		return err
 	}
