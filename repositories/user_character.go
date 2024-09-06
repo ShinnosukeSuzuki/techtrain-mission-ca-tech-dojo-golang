@@ -18,14 +18,14 @@ func NewUserCharacterRepository(db *sql.DB) UserCharacterRepository {
 
 // userのidに一致するキャラクターを取得する
 func (r *UserCharacterRepository) GetList(userId string) ([]models.UserCharacter, error) {
-	const sqlSelectCharacterByUserID = `
+	const query = `
 		SELECT uc.id, uc.character_id, c.name
 		FROM users_characters as uc
 		JOIN characters as c ON uc.character_id = c.id
 		WHERE uc.user_id = ?;
 	`
 
-	rows, err := r.db.Query(sqlSelectCharacterByUserID, userId)
+	rows, err := r.db.Query(query, userId)
 	if err != nil {
 		return nil, err
 	}
