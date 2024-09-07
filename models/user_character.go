@@ -11,3 +11,9 @@ type UserCharacter struct {
 type CharacterList struct {
 	Characters []UserCharacter `json:"characters"`
 }
+
+// users_charactersテーブルにインサートするための構造体
+type UserCharacterInsert struct {
+	ID          string `json:"id"`
+	CharacterID string `json:"characterID"`
+}
