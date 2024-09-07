@@ -22,6 +22,11 @@ func NewRouter(db *sql.DB) *http.ServeMux {
 	ucSer := services.NewUserCharacterService(ucRep)
 	ucCon := controllers.NewUserCharacterController(ucSer)
 
+	// gacha draw関連
+	cRep := repositories.NewCharacterRepository(db)
+	gdSer := services.NewGachaDrawService(ucRep, cRep)
+	gdCon := controllers.NewGachaDrawController(gdSer)
+
 	// register routes
 	mux := http.NewServeMux()
 
@@ -30,6 +35,9 @@ func NewRouter(db *sql.DB) *http.ServeMux {
 	// /user/getと/user/updateではX-Tokenが必要なのでmiddlewareを適用
 	mux.Handle("/user/get", middleware.XTokenAuthMiddleware(middleware.JSONContentTypeMiddleware(http.HandlerFunc(uCon.GetHandler)), uRep))
 	mux.Handle("/user/update", middleware.XTokenAuthMiddleware(http.HandlerFunc(uCon.UpdateNameHandler), uRep))
+
+	// /gacha/drawではX-Tokenが必要なのでmiddlewareを適用
+	mux.Handle("/gacha/draw", middleware.XTokenAuthMiddleware(middleware.JSONContentTypeMiddleware(http.HandlerFunc(gdCon.DrawHandler)), uRep))
 
 	// /character/listではX-Tokenが必要なのでmiddlewareを適用
 	mux.Handle("/character/list", middleware.XTokenAuthMiddleware(middleware.JSONContentTypeMiddleware(http.HandlerFunc(ucCon.GetListHandler)), uRep))
