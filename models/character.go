@@ -6,3 +6,8 @@ type Character struct {
 	Name        string  `json:"name"`
 	Probability float64 `json:"probability"`
 }
+
+type GachaResult struct {
+	CharacterID string
+	Name        string
+}

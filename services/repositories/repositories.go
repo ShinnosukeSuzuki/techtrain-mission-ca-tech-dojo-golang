@@ -10,7 +10,13 @@ type UserRepository interface {
 	UpdateName(userId, name string) error
 }
 
+// Character関連を引き受けるリポジトリインターフェース
+type CharacterRepository interface {
+	GetAllList() ([]models.Character, error)
+}
+
 // UserCharacter関連を引き受けるリポジトリインターフェース
 type UserCharacterRepository interface {
 	GetList(userId string) ([]models.UserCharacter, error)
+	InsertBulk(userId string, characters []models.UserCharacterInsert) error
 }
