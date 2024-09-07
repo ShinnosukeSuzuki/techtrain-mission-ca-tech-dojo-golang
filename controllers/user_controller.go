@@ -57,7 +57,11 @@ func (c *UserController) GetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, _ := r.Context().Value(middleware.UserIDKeyType{}).(string)
+	userId, ok := r.Context().Value(middleware.UserIDKeyType{}).(string)
+	if !ok {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
 
 	user, err := c.uSer.Get(userId)
 	if err != nil {
@@ -89,7 +93,11 @@ func (c *UserController) UpdateNameHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userId, _ := r.Context().Value(middleware.UserIDKeyType{}).(string)
+	userId, ok := r.Context().Value(middleware.UserIDKeyType{}).(string)
+	if !ok {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
 
 	if err := c.uSer.UpdateName(userId, req.Name); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

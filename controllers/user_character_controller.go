@@ -21,7 +21,6 @@ func NewUserCharacterController(s services.UserCharacterServicer) *UserCharacter
 }
 
 // ハンドラーメソッドを定義
-
 // GET /character/list
 func (c *UserCharacterController) GetListHandler(w http.ResponseWriter, r *http.Request) {
 	// GET以外のリクエストはエラー
@@ -30,7 +29,11 @@ func (c *UserCharacterController) GetListHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	userId, _ := r.Context().Value(middleware.UserIDKeyType{}).(string)
+	userId, ok := r.Context().Value(middleware.UserIDKeyType{}).(string)
+	if !ok {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
 
 	// userIdを元に一致するユーザーが所持するキャラクターを取得
 	characterList, err := c.service.List(userId)
