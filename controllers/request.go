@@ -1,6 +1,5 @@
 package controllers
 
-// ユーザーのリクエストボディを定義
 type (
 	// /user/create
 	UserCreateRequest struct {
@@ -10,5 +9,10 @@ type (
 	// /user/update
 	UserUpdateRequest struct {
 		Name string `json:"name"`
+	}
+
+	// /gacha/draw
+	GachaDrawRequest struct {
+		Times int `json:"times"`
 	}
 )
