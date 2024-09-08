@@ -29,26 +29,8 @@ func (s *GachaDrawService) Draw(times int, userId string) ([]models.GachaResult,
 		return nil, err
 	}
 
-	// ガチャの結果をDBにバルクインサートするための構造体を作成
-	var userCharacterInserts []models.UserCharacterInsert
-	// ガチャ結果を保存するための構造体を作成
-	var gachaResults []models.GachaResult
-	for i := 0; i < times; i++ {
-		// ガチャのIDをuuidで生成
-		id := uuid.GenerateUUID()
-
-		character := selectRandomCharacter(characters)
-		// ガチャの結果をDBにバルクインサートするための構造体に追加
-		userCharacterInserts = append(userCharacterInserts, models.UserCharacterInsert{
-			ID:          id,
-			CharacterID: character.ID,
-		})
-		// ガチャ結果を保存するための構造体に追加
-		gachaResults = append(gachaResults, models.GachaResult{
-			CharacterID: character.ID,
-			Name:        character.Name,
-		})
-	}
+	// ガチャを行いキャラクターを選択
+	gachaResults, userCharacterInserts := selectRandomCharacters(characters, times)
 
 	// ガチャの結果をDBにバルクインサート
 	if err := s.ucRep.InsertBulk(userId, userCharacterInserts); err != nil {
@@ -60,21 +42,53 @@ func (s *GachaDrawService) Draw(times int, userId string) ([]models.GachaResult,
 
 // ガチャロジックを実装する
 // キャラクターの確率に応じてランダムにキャラクターを選択する
-func selectRandomCharacter(characters []models.Character) *models.Character {
+func selectRandomCharacters(characters []models.Character, times int) ([]models.GachaResult, []models.UserCharacterInsert) {
+	// キャラクターの確率の合計を計算
 	totalProbability := 0.0
 	for _, char := range characters {
 		totalProbability += char.Probability
 	}
 
-	randomValue := rand.Float64() * totalProbability
-	cumulativeProbability := 0.0
+	gachaResults := make([]models.GachaResult, times)
+	userCharacterInserts := make([]models.UserCharacterInsert, times)
 
-	for _, char := range characters {
-		cumulativeProbability += char.Probability
-		if cumulativeProbability > randomValue {
-			return &char
+	// 累積確率を計算
+	cumulativeProbabilities := make([]float64, len(characters))
+	cumulativeProbabilities[0] = characters[0].Probability
+	for i := 1; i < len(characters); i++ {
+		cumulativeProbabilities[i] = cumulativeProbabilities[i-1] + characters[i].Probability
+	}
+
+	for i := 0; i < times; i++ {
+		// 0~totalProbabilityの範囲で乱数を生成
+		randomValue := rand.Float64() * totalProbability
+		index := binarySearch(cumulativeProbabilities, randomValue)
+		selectedChar := characters[index]
+
+		gachaResults[i] = models.GachaResult{
+			CharacterID: selectedChar.ID,
+			Name:        selectedChar.Name,
+		}
+
+		userCharacterInserts[i] = models.UserCharacterInsert{
+			ID:          uuid.GenerateUUID(),
+			CharacterID: selectedChar.ID,
 		}
 	}
 
-	return nil
+	return gachaResults, userCharacterInserts
+}
+
+func binarySearch(cumulativeProbabilities []float64, target float64) int {
+	left, right := 0, len(cumulativeProbabilities)-1
+	for left < right {
+		mid := (left + right) / 2
+		if cumulativeProbabilities[mid] < target {
+			left = mid + 1
+		} else {
+			right = mid
+		}
+	}
+
+	return left
 }
