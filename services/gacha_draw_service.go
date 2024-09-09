@@ -4,7 +4,6 @@ import (
 	"math/rand/v2"
 
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
-	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/pkg/uuid"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/repositories"
 )
 
@@ -30,10 +29,10 @@ func (s *GachaDrawService) Draw(times int, userId string) ([]models.GachaResult,
 	}
 
 	// ガチャを行いキャラクターを選択
-	gachaResults, userCharacterInserts := selectRandomCharacters(characters, times)
+	gachaResults := selectRandomCharacters(characters, times)
 
 	// ガチャの結果をDBにバルクインサート
-	if err := s.ucRep.InsertBulk(userId, userCharacterInserts); err != nil {
+	if err := s.ucRep.InsertBulk(userId, gachaResults); err != nil {
 		return nil, err
 	}
 
@@ -42,15 +41,14 @@ func (s *GachaDrawService) Draw(times int, userId string) ([]models.GachaResult,
 
 // ガチャロジックを実装する
 // キャラクターの確率に応じてランダムにキャラクターを選択する
-func selectRandomCharacters(characters []models.Character, times int) ([]models.GachaResult, []models.UserCharacterInsert) {
+func selectRandomCharacters(characters []models.Character, times int) []models.GachaResult {
 	// キャラクターの確率の合計を計算
-	totalProbability := 0.0
-	for _, char := range characters {
-		totalProbability += char.Probability
+	var totalProbability float64
+	for _, c := range characters {
+		totalProbability += c.Probability
 	}
 
 	gachaResults := make([]models.GachaResult, times)
-	userCharacterInserts := make([]models.UserCharacterInsert, times)
 
 	// 累積確率を計算
 	cumulativeProbabilities := make([]float64, len(characters))
@@ -69,14 +67,9 @@ func selectRandomCharacters(characters []models.Character, times int) ([]models.
 			CharacterID: selectedChar.ID,
 			Name:        selectedChar.Name,
 		}
-
-		userCharacterInserts[i] = models.UserCharacterInsert{
-			ID:          uuid.GenerateUUID(),
-			CharacterID: selectedChar.ID,
-		}
 	}
 
-	return gachaResults, userCharacterInserts
+	return gachaResults
 }
 
 func binarySearch(cumulativeProbabilities []float64, target float64) int {

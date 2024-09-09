@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/pkg/uuid"
 )
 
 // リポジトリ構造体を定義
@@ -46,19 +47,19 @@ func (r *UserCharacterRepository) GetList(userId string) ([]models.UserCharacter
 }
 
 // ガチャ結果をusers_charactersテーブルにバルクインサートする
-func (r *UserCharacterRepository) InsertBulk(userId string, characters []models.UserCharacterInsert) error {
-	if len(characters) == 0 {
+func (r *UserCharacterRepository) InsertBulk(userId string, gachaResults []models.GachaResult) error {
+	if len(gachaResults) == 0 {
 		return nil
 	}
 
 	// クエリのプレースホルダーを生成
-	valueStrings := make([]string, 0, len(characters))
-	valueArgs := make([]interface{}, 0, len(characters)*3)
-	for _, character := range characters {
+	valueStrings := make([]string, 0, len(gachaResults))
+	valueArgs := make([]any, 0, len(gachaResults)*3)
+	for _, g := range gachaResults {
 		valueStrings = append(valueStrings, "(?, ?, ?)")
-		valueArgs = append(valueArgs, character.ID)
+		valueArgs = append(valueArgs, uuid.GenerateUUID())
 		valueArgs = append(valueArgs, userId)
-		valueArgs = append(valueArgs, character.CharacterID)
+		valueArgs = append(valueArgs, g.CharacterID)
 	}
 
 	// クエリ文字列を生成
