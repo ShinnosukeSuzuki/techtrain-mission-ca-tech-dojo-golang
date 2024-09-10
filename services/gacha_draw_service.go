@@ -60,8 +60,19 @@ func selectRandomCharacters(characters []models.Character, times int) []models.G
 	for i := 0; i < times; i++ {
 		// 0~totalProbabilityの範囲で乱数を生成
 		randomValue := rand.Float64() * totalProbability
-		index := binarySearch(cumulativeProbabilities, randomValue)
-		selectedChar := characters[index]
+
+		// 二分探索で乱数に対応するキャラクターを選択
+		left, right := 0, len(cumulativeProbabilities)-1
+		for left < right {
+			mid := (left + right) / 2
+			if cumulativeProbabilities[mid] < randomValue {
+				left = mid + 1
+			} else {
+				right = mid
+			}
+		}
+
+		selectedChar := characters[left]
 
 		gachaResults[i] = models.GachaResult{
 			CharacterID: selectedChar.ID,
@@ -70,18 +81,4 @@ func selectRandomCharacters(characters []models.Character, times int) []models.G
 	}
 
 	return gachaResults
-}
-
-func binarySearch(cumulativeProbabilities []float64, target float64) int {
-	left, right := 0, len(cumulativeProbabilities)-1
-	for left < right {
-		mid := (left + right) / 2
-		if cumulativeProbabilities[mid] < target {
-			left = mid + 1
-		} else {
-			right = mid
-		}
-	}
-
-	return left
 }
