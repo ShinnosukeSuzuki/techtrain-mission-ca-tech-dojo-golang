@@ -2,12 +2,12 @@ package models
 
 // UserCharacterの構造体
 type UserCharacter struct {
-	UserCharacterID string `json:"userCharacterID"`
-	CharacterID     string `json:"characterID"`
-	Name            string `json:"name"`
+	UserCharacterID string
+	CharacterID     string
+	Name            string
 }
 
 // CharacterListの構造体
 type CharacterList struct {
-	Characters []UserCharacter `json:"characters"`
+	Characters []UserCharacter
 }

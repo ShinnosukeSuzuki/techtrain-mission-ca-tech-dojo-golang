@@ -11,6 +11,15 @@ type (
 		Name string `json:"name"`
 	}
 
+	// /gacha/draw
+	GachaResult struct {
+		CharacterID string `json:"characterID"`
+		Name        string `json:"name"`
+	}
+	GachaDrawResponse struct {
+		Results []GachaResult `json:"results"`
+	}
+
 	// /character/list
 	UserCharacter struct {
 		UserCharacterID string `json:"userCharacterID"`

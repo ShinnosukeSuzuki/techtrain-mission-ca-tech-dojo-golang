@@ -2,8 +2,11 @@ package repositories
 
 import (
 	"database/sql"
+	"fmt"
+	"strings"
 
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/pkg/uuid"
 )
 
 // リポジトリ構造体を定義
@@ -41,4 +44,31 @@ func (r *UserCharacterRepository) GetList(userId string) ([]models.UserCharacter
 	}
 
 	return userCharacters, nil
+}
+
+// ガチャ結果をusers_charactersテーブルにバルクインサートする
+func (r *UserCharacterRepository) InsertBulk(userId string, gachaResults []models.GachaResult) error {
+	if len(gachaResults) == 0 {
+		return nil
+	}
+
+	// クエリのプレースホルダーを生成
+	valueStrings := make([]string, 0, len(gachaResults))
+	valueArgs := make([]any, 0, len(gachaResults)*3)
+	for _, g := range gachaResults {
+		valueStrings = append(valueStrings, "(?, ?, ?)")
+		valueArgs = append(valueArgs, uuid.GenerateUUID())
+		valueArgs = append(valueArgs, userId)
+		valueArgs = append(valueArgs, g.CharacterID)
+	}
+
+	// クエリ文字列を生成
+	query := fmt.Sprintf("INSERT INTO users_characters (id, user_id, character_id) VALUES %s",
+		strings.Join(valueStrings, ", "))
+
+	_, err := r.db.Exec(query, valueArgs...)
+	if err != nil {
+		return err
+	}
+	return nil
 }
