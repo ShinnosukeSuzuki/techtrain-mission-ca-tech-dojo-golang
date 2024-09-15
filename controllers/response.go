@@ -1,6 +1,11 @@
 package controllers
 
 type (
+	// /health_check
+	HealthCheckResponse struct {
+		Message string `json:"message"`
+	}
+
 	// /user/create
 	UserCreateResponse struct {
 		Token string `json:"token"`

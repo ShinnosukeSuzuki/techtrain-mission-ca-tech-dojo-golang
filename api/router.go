@@ -12,6 +12,9 @@ import (
 
 func NewRouter(db *sql.DB) *http.ServeMux {
 
+	// health_check関連
+	hCon := controllers.NewHealthCheckController()
+
 	// user関連
 	uRep := repositories.NewUserRepository(db)
 	uSer := services.NewUserService(uRep)
@@ -31,6 +34,7 @@ func NewRouter(db *sql.DB) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// ルーティングの設定
+	mux.Handle("/health-check", middleware.JSONContentTypeMiddleware(http.HandlerFunc(hCon.HealthCheckHandler)))
 	mux.Handle("/user/create", middleware.JSONContentTypeMiddleware(http.HandlerFunc(uCon.CreateHandler)))
 	// /user/getと/user/updateではX-Tokenが必要なのでmiddlewareを適用
 	mux.Handle("/user/get", middleware.XTokenAuthMiddleware(middleware.JSONContentTypeMiddleware(http.HandlerFunc(uCon.GetHandler)), uRep))
