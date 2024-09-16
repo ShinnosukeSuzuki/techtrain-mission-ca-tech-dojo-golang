@@ -1,12 +1,14 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { NetworkResources } from './constructs/network-resources';
 import { DatabaseResources } from './constructs/database-resources';
 import { BastionResources } from './constructs/bastion-resources';
 import { EcsFargateResources } from './constructs/ecs-fargate-resources';
 import { AlbResources } from './constructs/alb-resources';
+import { CiCdResources } from './constructs/cicd-resources';
 
 
 interface GameApiInfrastructureStackProps extends cdk.StackProps {
@@ -70,6 +72,15 @@ export class GameApiInfrastructureStack extends cdk.Stack {
       cpu: 0.25,
       httpListener: albResources.httpListener
     });
-    
+
+    // codepielineで使用するconnectionarnをsecretsmanagerから取得
+    const connectionArn = secretsmanager.Secret.fromSecretNameV2(this, 'ConnectionArn', 'ca-tech-dojo-golang-connection-arn').secretValueFromJson('ARN').unsafeUnwrap();
+    // CICDResources をインスタンス化
+    const cicdResources = new CiCdResources(this, `CiCdResources-${env}`, {
+      env,
+      vpc: networkResources.vpc,
+      ecrRepository,
+      connectionArn,
+    });
   }
 }

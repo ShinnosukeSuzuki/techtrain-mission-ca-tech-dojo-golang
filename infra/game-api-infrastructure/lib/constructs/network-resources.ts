@@ -73,7 +73,7 @@ export class NetworkResources extends Construct {
 
     // ALB, ECS, RDS, 踏み台のセキュリティグループのインバウンドルールの設定
     // 家のIPアドレスからのみALBにアクセス可能
-    this.albSecurityGroup.addIngressRule(ec2.Peer.ipv4(`${process.env.MY_IP}/32`), ec2.Port.tcp(80), 'Allow HTTP traffic from my IP');
+    this.albSecurityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(80), 'Allow HTTP traffic from anywhere');
     this.ecsSecurityGroup.addIngressRule(this.albSecurityGroup, ec2.Port.tcp(8080), 'Allow HTTP traffic from ALB');
     this.rdsSecurityGroup.addIngressRule(this.ecsSecurityGroup, ec2.Port.tcp(3306), 'Allow MySQL traffic from ECS');
     this.rdsSecurityGroup.addIngressRule(this.bastionSecurityGroup, ec2.Port.tcp(3306), 'Allow MySQL traffic from Bastion');
