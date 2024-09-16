@@ -37,6 +37,17 @@ export class CiCdResources extends Construct {
       projectName: `Game-API-ECR-Push-Project-${env}`,
       vpc,
       role: codeBuildRole,
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.STANDARD_7_0,
+        computeType: codebuild.ComputeType.SMALL,
+        privileged: true,
+      },
+      environmentVariables: {
+        AWS_DEFAULT_REGION: { value: cdk.Stack.of(this).region },
+        AWS_ACCOUNT_ID: { value: cdk.Stack.of(this).account },
+        REPOSITORY_URI: { value: ecrRepository.repositoryUri },
+        PARAMETER_STORE_NAME: { value: `/ECR/game-api-${env.toLowerCase()}/tag`},
+      },
       buildSpec: codebuild.BuildSpec.fromObject({
         version: '0.2',
         phases: {
@@ -79,15 +90,6 @@ export class CiCdResources extends Construct {
           },
         }
       }),
-      environment: {
-        buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_4,
-      },
-      environmentVariables: {
-        AWS_DEFAULT_REGION: { value: cdk.Stack.of(this).region },
-        AWS_ACCOUNT_ID: { value: cdk.Stack.of(this).account },
-        REPOSITORY_URI: { value: ecrRepository.repositoryUri },
-        PARAMETER_STORE_NAME: { value: `/ECR/game-api-${env.toLowerCase()}/tag`},
-      }
     });
 
     // CodePipeline の作成
@@ -149,7 +151,7 @@ export class CiCdResources extends Construct {
       },
       FilePaths: {
         // dockerfileの変更に関係のないinfra以下の変更を無視
-        Excludes: ['./infra/*'],
+        Excludes: ['infra/**'],
       },
     };
 
