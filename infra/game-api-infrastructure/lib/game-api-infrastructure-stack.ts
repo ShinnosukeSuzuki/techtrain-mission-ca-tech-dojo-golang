@@ -75,15 +75,12 @@ export class GameApiInfrastructureStack extends cdk.Stack {
 
     // codepielineで使用するconnectionarnをsecretsmanagerから取得
     const connectionArn = secretsmanager.Secret.fromSecretNameV2(this, 'ConnectionArn', 'ca-tech-dojo-golang-connection-arn').secretValueFromJson('ARN').unsafeUnwrap();
-    // webhook secretTokenをsecretsmanagerから取得
-    const secretToken = secretsmanager.Secret.fromSecretNameV2(this, 'githubWebhookSecretToken', 'github-webhook-secret-token').secretValue.unsafeUnwrap();
     // CICDResources をインスタンス化
     const cicdResources = new CiCdResources(this, `CiCdResources-${env}`, {
       env,
       vpc: networkResources.vpc,
       ecrRepository,
       connectionArn,
-      secretToken
     });
   }
 }

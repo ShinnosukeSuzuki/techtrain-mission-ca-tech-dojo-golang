@@ -1,7 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from "aws-cdk-lib/aws-iam";
-import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as codebuild from 'aws-cdk-lib/aws-codebuild';
 import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
 import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
@@ -14,7 +13,6 @@ export interface CiCdResourcesProps {
   readonly vpc: ec2.IVpc;
   readonly ecrRepository: ecr.Repository;
   readonly connectionArn: string;
-  readonly secretToken: string;
 }
 
 export class CiCdResources extends Construct {
@@ -24,7 +22,7 @@ export class CiCdResources extends Construct {
   constructor(scope: Construct, id: string, props: CiCdResourcesProps) {
     super(scope, id);
 
-    const { env, vpc, ecrRepository, connectionArn, secretToken } = props;
+    const { env, vpc, ecrRepository, connectionArn } = props;
 
     // IAMロールの作成(cdk deployできる必要があるためAdministratorAccessを付与)
     const codeBuildRole = new iam.Role(this, 'BuildProjectRole', {
@@ -127,29 +125,46 @@ export class CiCdResources extends Construct {
       ],
     });
 
-    const webhook = new codepipeline.CfnWebhook(this, 'WebhookResource', {
-      authentication: 'GITHUB_HMAC',
-      authenticationConfiguration: {
-        secretToken: secretToken,
+    // トリガーを追加
+    this.pipeline.addTrigger({
+      providerType: codepipeline.ProviderType.CODE_STAR_SOURCE_CONNECTION,
+
+      // the properties below are optional
+      gitConfiguration: {
+        sourceAction: sourceAction,
+
+        // pushFilterのBranchとFilepathはまだCDK未対応。tagsを仮設定（addPropertyOverrideで上書きする）
+        pushFilter: [
+          {
+            tagsIncludes: ["tagsIncludes"], // 置換されるので適当な文字列を設定
+          },
+        ],
       },
-      // GitHub の Release イベントで送られてくるペイロードを通すためのフィルター
-      filters: [
-        {
-          jsonPath: '$.action',
-          matchEquals: 'closed', // main ブランチに PR がマージされたときはclosedになる
-        },
-      ],
-      targetAction: sourceAction.actionProperties.actionName,
-      targetPipeline: this.pipeline.pipelineName,
-      targetPipelineVersion: 1,
-      // GitHub 側で Webhook を手動で作成する
-      registerWithThirdParty: false,
     });
 
-    // Webhook のエンドポイントを出力する
-    new cdk.CfnOutput(this, 'WebhookUrl', {
-      value: webhook.attrUrl,
-    });
+    // addPropertyOverrideでトリガー条件を上書きする
+    const pushFilterJson = {
+      Branches: {
+        Includes: [env === 'Prod' ? 'main' : 'develop'],
+      },
+      FilePaths: {
+        // dockerfileの変更に関係のないinfra以下の変更を無視
+        Excludes: ['./infra/*'],
+      },
+    };
+
+    // cfnPipelineを取得して、addPropertyOverrideを実施
+    const cfnPipeline = this.pipeline.node
+      .defaultChild as codepipeline.CfnPipeline;
+    cfnPipeline.addPropertyOverride("Triggers", [
+      {
+        GitConfiguration: {
+          Push: [pushFilterJson],
+          SourceActionName: sourceAction.actionProperties.actionName,
+        },
+        ProviderType: "CodeStarSourceConnection",
+      },
+    ]);
 
     // CodePipeline に CodeBuild の権限を付与
     this.pipeline.addToRolePolicy(new iam.PolicyStatement({
