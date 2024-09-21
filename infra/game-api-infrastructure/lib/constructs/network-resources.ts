@@ -74,7 +74,12 @@ export class NetworkResources extends Construct {
     // ALB, ECS, RDS, 踏み台のセキュリティグループのインバウンドルールの設定
     // 家のIPアドレスからのみALBにアクセス可能
     this.albSecurityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(80), 'Allow HTTP traffic from anywhere');
+
+    // ALBからのアクセスのみECSにアクセス可能(8080はGame API用, 9100はNode Exporter用)
     this.ecsSecurityGroup.addIngressRule(this.albSecurityGroup, ec2.Port.tcp(8080), 'Allow HTTP traffic from ALB');
+    this.ecsSecurityGroup.addIngressRule(this.albSecurityGroup, ec2.Port.tcp(9100), 'Allow Node Exporter traffic from ALB');
+    
+    // ECSとBastionからのみRDSにアクセス可能
     this.rdsSecurityGroup.addIngressRule(this.ecsSecurityGroup, ec2.Port.tcp(3306), 'Allow MySQL traffic from ECS');
     this.rdsSecurityGroup.addIngressRule(this.bastionSecurityGroup, ec2.Port.tcp(3306), 'Allow MySQL traffic from Bastion');
   }

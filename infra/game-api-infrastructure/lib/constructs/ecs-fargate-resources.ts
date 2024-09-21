@@ -7,15 +7,14 @@ import * as secrets from "aws-cdk-lib/aws-secretsmanager";
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import { Construct } from 'constructs';
 
-
 export interface EcsFargateResourcesProps {
   readonly env: string;
   readonly vpc: ec2.IVpc;
   readonly ecsSecurityGroup: ec2.ISecurityGroup;
   readonly ecrRepository: ecr.IRepository;
   readonly ecrRepositoryTag: string;
-  readonly adminUserPassword : secrets.Secret;
-  readonly cpu: number; // 1→1vCPUとなる
+  readonly adminUserPassword: secrets.Secret;
+  readonly cpu: number;
   readonly httpListener: elbv2.ApplicationListener;
 }
 
@@ -23,8 +22,8 @@ export class EcsFargateResources extends Construct {
   public readonly ecsCluster: ecs.Cluster;
   public readonly taskDefinition: ecs.FargateTaskDefinition;
   public readonly service: ecs.FargateService;
-  public readonly targetGroup: elbv2.ApplicationTargetGroup;
-
+  public readonly gameApiTargetGroup: elbv2.ApplicationTargetGroup;
+  public readonly nodeExporterTargetGroup: elbv2.ApplicationTargetGroup;
 
   constructor(scope: Construct, id: string, props: EcsFargateResourcesProps) {
     super(scope, id);
@@ -44,13 +43,13 @@ export class EcsFargateResources extends Construct {
       memoryLimitMiB: 2048 * cpu,
     });
 
-    // タスク定義にコンテナを追加
-    const container = this.taskDefinition.addContainer('Container', {
-      containerName:  `Game-API-Container-${env}`,
+    // APIサーバーコンテナの追加
+    const apiContainer = this.taskDefinition.addContainer('ApiContainer', {
+      containerName: `Game-API-Container-${env}`,
       image: ecs.ContainerImage.fromEcrRepository(ecrRepository, ecrRepositoryTag),
       logging: ecs.LogDrivers.awsLogs({
         streamPrefix: 'GameApiContainer',
-        logGroup: new logs.LogGroup(this, 'LogGroup', {
+        logGroup: new logs.LogGroup(this, 'ApiLogGroup', {
           logGroupName: `/ecs/GameApiContainer/${env}`,
           retention: logs.RetentionDays.ONE_DAY,
           removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -67,10 +66,31 @@ export class EcsFargateResources extends Construct {
         DBPORT: ecs.Secret.fromSecretsManager(adminUserPassword, 'port'),
       },
     });
-  
-    // ポートマッピングを追加
-    container.addPortMappings({
+
+    apiContainer.addPortMappings({
       containerPort: 8080,
+      protocol: ecs.Protocol.TCP,
+    });
+
+    // Node Exporterコンテナの追加
+    const nodeExporterContainer = this.taskDefinition.addContainer('NodeExporterContainer', {
+      containerName: `Node-Exporter-Container-${env}`,
+      image: ecs.ContainerImage.fromRegistry('prom/node-exporter:latest'),
+      logging: ecs.LogDrivers.awsLogs({
+        streamPrefix: 'NodeExporterContainer',
+        logGroup: new logs.LogGroup(this, 'NodeExporterLogGroup', {
+          logGroupName: `/ecs/NodeExporterContainer/${env}`,
+          retention: logs.RetentionDays.ONE_DAY,
+          removalPolicy: cdk.RemovalPolicy.DESTROY,
+        }),
+      }),
+      command: [
+        '--web.listen-address=:9100',
+      ],
+    });
+
+    nodeExporterContainer.addPortMappings({
+      containerPort: 9100,
       protocol: ecs.Protocol.TCP,
     });
 
@@ -82,22 +102,50 @@ export class EcsFargateResources extends Construct {
       assignPublicIp: false,
       securityGroups: [ecsSecurityGroup],
       desiredCount: 1,
-      healthCheckGracePeriod: cdk.Duration.seconds(30), // ヘルスチェックの待機時間を60秒に設定
-      propagateTags: ecs.PropagatedTagSource.SERVICE, // タグをserviceからtaskに伝播
+      healthCheckGracePeriod: cdk.Duration.seconds(30),
+      propagateTags: ecs.PropagatedTagSource.SERVICE,
     });
 
-    this.targetGroup = httpListener.addTargets('EcsFargateTargetGroup', {
+    this.gameApiTargetGroup = httpListener.addTargets('GameApiTargetGroup', {
       targetGroupName: `Game-API-TargetGroup-${env}`,
       port: 8080,
-      targets: [this.service],
+      targets: [this.service.loadBalancerTarget({
+        containerName: `Game-API-Container-${env}`,
+        containerPort: 8080,
+      })],
       healthCheck: {
         path: "/health-check",
-            healthyHttpCodes: "200",
-            timeout: cdk.Duration.seconds(5), // タイムアウトを5秒に設定
-            interval: cdk.Duration.seconds(30), // ヘルスチェックの間隔を60秒に設定
-            healthyThresholdCount: 2, // ヘルスチェックが成功したと見なすまでの回数を2回に設定
-            unhealthyThresholdCount: 5, // ヘルスチェックが失敗したと見なすまでの回数を5回に設定
-        },
+        healthyHttpCodes: "200",
+        timeout: cdk.Duration.seconds(5),
+        interval: cdk.Duration.seconds(30),
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 5,
+      },
+    });
+
+    // Node Exporter用のTarget Groupを作成
+    this.nodeExporterTargetGroup = new elbv2.ApplicationTargetGroup(this, 'NodeExporterTargetGroup', {
+      targetGroupName: `Node-Exporter-TargetGroup-${env}`,
+      vpc,
+      port: 9100,
+      protocol: elbv2.ApplicationProtocol.HTTP,
+      targets: [this.service.loadBalancerTarget({
+        containerName: `Node-Exporter-Container-${env}`,
+        containerPort: 9100,
+      })],
+      healthCheck: {
+        path: '/metrics',
+        port: '9100',
+      },
+    });
+
+    // Node Exporter用のListenerRuleを作成
+    httpListener.addTargetGroups('NodeExporterRule', {
+      targetGroups: [this.nodeExporterTargetGroup],
+      priority: 10,
+      conditions: [
+        elbv2.ListenerCondition.pathPatterns(['/metrics']),
+      ],
     });
   }
 }
