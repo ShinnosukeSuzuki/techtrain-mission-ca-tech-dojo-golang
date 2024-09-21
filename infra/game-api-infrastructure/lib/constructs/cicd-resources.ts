@@ -150,8 +150,8 @@ export class CiCdResources extends Construct {
         Includes: [env === 'Prod' ? 'main' : 'develop'],
       },
       FilePaths: {
-        // dockerfileの変更に関係のないinfra以下の変更を無視
-        Excludes: ['infra/**'],
+        // dockerfileの変更に関係のない.mdファイル、infra以下、observation以下の変更は無視
+        Excludes: ['**/*.md', 'infra/**', 'observation/**'],
       },
     };
 
