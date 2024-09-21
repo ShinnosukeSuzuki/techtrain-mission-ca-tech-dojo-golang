@@ -1,0 +1,24 @@
+services:
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - metrics_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+    hostname: grafana
+    env_file:
+      - ./grafana/grafana.env
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  metrics_data:
+  grafana_data:

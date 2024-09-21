@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'ecs-node-exporter'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['Game-API-ALB-Prod-851930414.ap-northeast-1.elb.amazonaws.com']
+    scheme: http
