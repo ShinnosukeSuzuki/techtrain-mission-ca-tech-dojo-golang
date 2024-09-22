@@ -1,0 +1,7 @@
+*.md
+
+# infraディレクトリ以下を除外
+infra
+
+# observationディレクトリ以下を除外
+observation
