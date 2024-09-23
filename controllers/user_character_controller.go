@@ -1,13 +1,11 @@
 package controllers
 
 import (
-	"encoding/json"
-
 	"net/http"
 
-	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/api/middleware"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/controllers/services"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
+	"github.com/labstack/echo/v4"
 )
 
 // UserCharacter用のコントローラ構造体
@@ -22,24 +20,16 @@ func NewUserCharacterController(s services.UserCharacterServicer) *UserCharacter
 
 // ハンドラーメソッドを定義
 // GET /character/list
-func (c *UserCharacterController) GetListHandler(w http.ResponseWriter, r *http.Request) {
-	// GET以外のリクエストはエラー
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	userId, ok := r.Context().Value(middleware.UserIDKeyType{}).(string)
+func (c *UserCharacterController) GetListHandler(ctx echo.Context) error {
+	userID, ok := ctx.Get("userID").(string)
 	if !ok {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
-		return
+		return ctx.JSON(http.StatusBadRequest, "Invalid request")
 	}
 
 	// userIdを元に一致するユーザーが所持するキャラクターを取得
-	characterList, err := c.service.List(userId)
+	characterList, err := c.service.List(userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 
 	if len(characterList.Characters) == 0 {
@@ -59,8 +49,5 @@ func (c *UserCharacterController) GetListHandler(w http.ResponseWriter, r *http.
 		Characters: characters,
 	}
 
-	if err := json.NewEncoder(w).Encode(res); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	return ctx.JSON(http.StatusOK, res)
 }
