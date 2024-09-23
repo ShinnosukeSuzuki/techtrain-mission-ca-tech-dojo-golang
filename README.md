@@ -29,4 +29,4 @@ go api サーバーのサイドカーに[Node exporter](https://github.com/prome
 ![alt text](infra/observation/grafana/grafana.png)
 
 ## 使用技術
-Go(1.22.4), MySQL(8.0), AWS ECS, AWS RDS, AWS CodePipleline, AWS CodeBuild, AWS CDK, Prometheus, Grafana
+Go(1.22.4), Echo(4.12.0), MySQL(8.0), AWS ECS, AWS RDS, AWS CodePipleline, AWS CodeBuild, AWS CDK, Prometheus, Grafana
