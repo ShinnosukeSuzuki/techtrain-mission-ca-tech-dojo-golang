@@ -21,7 +21,7 @@ func NewGachaDrawService(ucRep repositories.UserCharacterRepository, cRep reposi
 }
 
 // ハンドラー GachaDrawHandler 用のサービスメソッド
-func (s *GachaDrawService) Draw(times int, userId string) ([]models.GachaResult, error) {
+func (s *GachaDrawService) Draw(times int, userID string) ([]models.GachaResult, error) {
 	// キャラクター全件取得
 	characters, err := s.cRep.GetAllList()
 	if err != nil {
@@ -32,7 +32,7 @@ func (s *GachaDrawService) Draw(times int, userId string) ([]models.GachaResult,
 	gachaResults := selectRandomCharacters(characters, times)
 
 	// ガチャの結果をDBにバルクインサート
-	if err := s.ucRep.InsertBulk(userId, gachaResults); err != nil {
+	if err := s.ucRep.InsertBulk(userID, gachaResults); err != nil {
 		return nil, err
 	}
 

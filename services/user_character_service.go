@@ -17,8 +17,8 @@ func NewUserCharacterService(r repositories.UserCharacterRepository) *UserCharac
 }
 
 // ハンドラー GetListHandler 用のサービスメソッド
-func (s *UserCharacterService) List(userId string) (models.CharacterList, error) {
-	userCharacters, err := s.ucRep.GetList(userId)
+func (s *UserCharacterService) List(userID string) (models.CharacterList, error) {
+	userCharacters, err := s.ucRep.GetList(userID)
 	if err != nil {
 		return models.CharacterList{}, err
 	}
