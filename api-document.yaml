@@ -15,9 +15,29 @@ tags:
     description: "ガチャ関連API"
   - name: "character"
     description: "キャラクター関連API"
+  - name: "health-check"
+    description: "ヘルスチェックAPI"
 schemes:
   - "http"
 paths:
+  /health-check:
+    get:
+      tags:
+        - "health-check"
+      summary: "ヘルスチェックAPI"
+      description: "APIサーバのヘルスチェックを行います。"
+      produces:
+        - "application/json"
+      responses:
+        200:
+          "description": "A successful response."
+          "schema":
+            type: "object"
+            properties:
+              Message:
+                type: "string"
+                example: "OK"
+                description: "APIサーバのステータス"
   /user/create:
     post:
       tags:
