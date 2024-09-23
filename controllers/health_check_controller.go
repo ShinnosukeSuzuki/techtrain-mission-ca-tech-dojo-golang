@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"encoding/json"
-
 	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
 // HealthCheck用のコントローラ構造体
@@ -15,19 +15,14 @@ func NewHealthCheckController() *HealthCheckController {
 }
 
 // ハンドラーメソッドを定義
-// GET /health_check
-func (c *HealthCheckController) HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	// GET以外のリクエストはエラー
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
+// GET /health-check
+func (c *HealthCheckController) HealthCheckHandler(ctx echo.Context) error {
 
 	res := &HealthCheckResponse{
 		Message: "OK",
 	}
-	if err := json.NewEncoder(w).Encode(res); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if err := ctx.Bind(res); err != nil {
+		return err
 	}
+	return ctx.JSON(http.StatusOK, res)
 }
