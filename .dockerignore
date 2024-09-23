@@ -1,4 +1,5 @@
 *.md
+*.png
 
 # infraディレクトリ以下を除外
 infra/*
