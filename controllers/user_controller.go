@@ -1,12 +1,10 @@
 package controllers
 
 import (
-	"encoding/json"
-
 	"net/http"
 
-	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/api/middleware"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/controllers/services"
+	"github.com/labstack/echo/v4"
 )
 
 // User用のコントローラ構造体
@@ -21,88 +19,58 @@ func NewUserController(s services.UserServicer) *UserController {
 
 // ハンドラーメソッドを定義
 // POST /user/create
-func (c *UserController) CreateHandler(w http.ResponseWriter, r *http.Request) {
-	// POST以外のリクエストはエラー
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
+func (c *UserController) CreateHandler(ctx echo.Context) error {
 	req := &UserCreateRequest{}
-	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	if err := ctx.Bind(req); err != nil {
+		return err
 	}
 
 	user, err := c.uSer.Create(req.Name)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 
 	res := &UserCreateResponse{
 		Token: user.Token,
 	}
-	if err := json.NewEncoder(w).Encode(res); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+
+	return ctx.JSON(http.StatusOK, res)
 }
 
 // GET /user/get
-func (c *UserController) GetHandler(w http.ResponseWriter, r *http.Request) {
-	// GET以外のリクエストはエラー
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	userId, ok := r.Context().Value(middleware.UserIDKeyType{}).(string)
+func (c *UserController) GetHandler(ctx echo.Context) error {
+	userID, ok := ctx.Get("userID").(string)
 	if !ok {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
-		return
+		return ctx.JSON(http.StatusBadRequest, "Invalid request")
 	}
 
-	user, err := c.uSer.Get(userId)
+	user, err := c.uSer.Get(userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 
 	res := &UserGetResponse{
 		Name: user.Name,
 	}
 
-	if err := json.NewEncoder(w).Encode(res); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	return ctx.JSON(http.StatusOK, res)
 }
 
 // PUT /user/update
-func (c *UserController) UpdateNameHandler(w http.ResponseWriter, r *http.Request) {
-	// PUT以外のリクエストはエラー
-	if r.Method != http.MethodPut {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
+func (c *UserController) UpdateNameHandler(ctx echo.Context) error {
 	req := &UserUpdateRequest{}
-	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	if err := ctx.Bind(req); err != nil {
+		return err
 	}
 
-	userId, ok := r.Context().Value(middleware.UserIDKeyType{}).(string)
+	userID, ok := ctx.Get("userID").(string)
 	if !ok {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
-		return
+		return ctx.JSON(http.StatusBadRequest, "Invalid request")
 	}
 
-	if err := c.uSer.UpdateName(userId, req.Name); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	if err := c.uSer.UpdateName(userID, req.Name); err != nil {
+		return err
 	}
 
-	w.WriteHeader(http.StatusOK)
+	return ctx.NoContent(http.StatusOK)
 }

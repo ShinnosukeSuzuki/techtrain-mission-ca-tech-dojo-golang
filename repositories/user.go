@@ -54,7 +54,7 @@ func (r *UserRepository) GetByToken(token string) (models.User, error) {
 }
 
 // idからユーザーを取得する
-func (r *UserRepository) GetById(userId string) (models.User, error) {
+func (r *UserRepository) GetById(userID string) (models.User, error) {
 	const query = `
 		SELECT id, name, token
 		FROM users
@@ -62,7 +62,7 @@ func (r *UserRepository) GetById(userId string) (models.User, error) {
 	`
 
 	var user models.User
-	err := r.db.QueryRow(query, userId).Scan(&user.ID, &user.Name, &user.Token)
+	err := r.db.QueryRow(query, userID).Scan(&user.ID, &user.Name, &user.Token)
 	if err != nil {
 		return models.User{}, err
 	}
@@ -71,14 +71,14 @@ func (r *UserRepository) GetById(userId string) (models.User, error) {
 }
 
 // userIdが一致するユーザーのnameを更新する
-func (r *UserRepository) UpdateName(userId, name string) error {
+func (r *UserRepository) UpdateName(userID, name string) error {
 	const query = `
 		UPDATE users
 		SET name = ?
 		WHERE id = ?;
 	`
 
-	_, err := r.db.Exec(query, name, userId)
+	_, err := r.db.Exec(query, name, userID)
 	if err != nil {
 		return err
 	}

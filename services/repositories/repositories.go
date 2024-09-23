@@ -6,8 +6,8 @@ import "github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models
 type UserRepository interface {
 	Create(name string, token string) (models.User, error)
 	GetByToken(token string) (models.User, error)
-	GetById(userId string) (models.User, error)
-	UpdateName(userId, name string) error
+	GetById(userID string) (models.User, error)
+	UpdateName(userID, name string) error
 }
 
 // Character関連を引き受けるリポジトリインターフェース
@@ -17,6 +17,6 @@ type CharacterRepository interface {
 
 // UserCharacter関連を引き受けるリポジトリインターフェース
 type UserCharacterRepository interface {
-	GetList(userId string) ([]models.UserCharacter, error)
-	InsertBulk(userId string, characters []models.GachaResult) error
+	GetList(userID string) ([]models.UserCharacter, error)
+	InsertBulk(userID string, characters []models.GachaResult) error
 }

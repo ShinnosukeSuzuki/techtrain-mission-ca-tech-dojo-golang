@@ -20,7 +20,7 @@ func NewUserCharacterRepository(db *sql.DB) UserCharacterRepository {
 }
 
 // userのidに一致するキャラクターを取得する
-func (r *UserCharacterRepository) GetList(userId string) ([]models.UserCharacter, error) {
+func (r *UserCharacterRepository) GetList(userID string) ([]models.UserCharacter, error) {
 	const query = `
 		SELECT uc.id, uc.character_id, c.name
 		FROM users_characters as uc
@@ -28,7 +28,7 @@ func (r *UserCharacterRepository) GetList(userId string) ([]models.UserCharacter
 		WHERE uc.user_id = ?;
 	`
 
-	rows, err := r.db.Query(query, userId)
+	rows, err := r.db.Query(query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (r *UserCharacterRepository) GetList(userId string) ([]models.UserCharacter
 }
 
 // ガチャ結果をusers_charactersテーブルにバルクインサートする
-func (r *UserCharacterRepository) InsertBulk(userId string, gachaResults []models.GachaResult) error {
+func (r *UserCharacterRepository) InsertBulk(userID string, gachaResults []models.GachaResult) error {
 	if len(gachaResults) == 0 {
 		return nil
 	}
@@ -58,7 +58,7 @@ func (r *UserCharacterRepository) InsertBulk(userId string, gachaResults []model
 	for _, g := range gachaResults {
 		valueStrings = append(valueStrings, "(?, ?, ?)")
 		valueArgs = append(valueArgs, uuid.GenerateUUID())
-		valueArgs = append(valueArgs, userId)
+		valueArgs = append(valueArgs, userID)
 		valueArgs = append(valueArgs, g.CharacterID)
 	}
 

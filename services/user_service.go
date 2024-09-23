@@ -32,9 +32,9 @@ func (s *UserService) Create(name string) (models.User, error) {
 }
 
 // ハンドラー GetHandler 用のサービスメソッド
-func (s *UserService) Get(userId string) (models.User, error) {
+func (s *UserService) Get(userID string) (models.User, error) {
 
-	user, err := s.uRep.GetById(userId)
+	user, err := s.uRep.GetById(userID)
 	if err != nil {
 		return models.User{}, err
 	}
@@ -43,9 +43,9 @@ func (s *UserService) Get(userId string) (models.User, error) {
 }
 
 // ハンドラー UpdateNameHandler 用のサービスメソッド
-func (s *UserService) UpdateName(userId, name string) error {
+func (s *UserService) UpdateName(userID, name string) error {
 
-	err := s.uRep.UpdateName(userId, name)
+	err := s.uRep.UpdateName(userID, name)
 	if err != nil {
 		return err
 	}

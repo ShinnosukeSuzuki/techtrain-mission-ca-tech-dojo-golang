@@ -1,11 +1,10 @@
 package controllers
 
 import (
-	"encoding/json"
-
 	"net/http"
 
-	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/api/middleware"
+	"github.com/labstack/echo/v4"
+
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/controllers/services"
 )
 
@@ -21,37 +20,27 @@ func NewGachaDrawController(s services.GachaDrawServicer) *GachaDrawController {
 
 // ハンドラーメソッドを定義
 // POST /gacha/draw
-func (c *GachaDrawController) DrawHandler(w http.ResponseWriter, r *http.Request) {
-	// POST以外のリクエストはエラー
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	userId, ok := r.Context().Value(middleware.UserIDKeyType{}).(string)
+func (c *GachaDrawController) DrawHandler(ctx echo.Context) error {
+	userID, ok := ctx.Get("userID").(string)
 	if !ok {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
-		return
+		return ctx.JSON(http.StatusBadRequest, "Invalid request")
 	}
 
 	// リクエストボディをパース
 	var req GachaDrawRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+	if err := ctx.Bind(&req); err != nil {
+		return err
 	}
 
 	// timesが0未満の場合はエラー
 	if req.Times < 0 {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
-		return
+		return ctx.JSON(http.StatusBadRequest, "Invalid request")
 	}
 
 	// ガチャを引く
-	results, err := c.service.Draw(req.Times, userId)
+	results, err := c.service.Draw(req.Times, userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 
 	gachaResults := make([]GachaResult, 0, len(results))
@@ -66,9 +55,5 @@ func (c *GachaDrawController) DrawHandler(w http.ResponseWriter, r *http.Request
 		Results: gachaResults,
 	}
 
-	if err := json.NewEncoder(w).Encode(res); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
+	return ctx.JSON(http.StatusOK, res)
 }
