@@ -2,49 +2,44 @@ package api
 
 import (
 	"database/sql"
-	"net/http"
 
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/api/middleware"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/controllers"
+
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/repositories"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/services"
+	"github.com/labstack/echo/v4"
 )
 
-func NewRouter(db *sql.DB) *http.ServeMux {
+func NewRouter(db *sql.DB) *echo.Echo {
+	e := echo.New()
 
-	// health_check関連
-	hCon := controllers.NewHealthCheckController()
-
-	// user関連
+	// Repositories
 	uRep := repositories.NewUserRepository(db)
-	uSer := services.NewUserService(uRep)
-	uCon := controllers.NewUserController(uSer)
-
-	// user_character関連
 	ucRep := repositories.NewUserCharacterRepository(db)
-	ucSer := services.NewUserCharacterService(ucRep)
-	ucCon := controllers.NewUserCharacterController(ucSer)
-
-	// gacha draw関連
 	cRep := repositories.NewCharacterRepository(db)
+
+	// Services
+	uSer := services.NewUserService(uRep)
+	ucSer := services.NewUserCharacterService(ucRep)
 	gdSer := services.NewGachaDrawService(ucRep, cRep)
+
+	// Controllers
+	hCon := controllers.NewHealthCheckController()
+	uCon := controllers.NewUserController(uSer)
+	ucCon := controllers.NewUserCharacterController(ucSer)
 	gdCon := controllers.NewGachaDrawController(gdSer)
 
-	// register routes
-	mux := http.NewServeMux()
+	// Routes
+	e.GET("/health-check", hCon.HealthCheckHandler)
+	e.POST("/user/create", uCon.CreateHandler)
 
-	// ルーティングの設定
-	mux.Handle("/health-check", middleware.JSONContentTypeMiddleware(http.HandlerFunc(hCon.HealthCheckHandler)))
-	mux.Handle("/user/create", middleware.JSONContentTypeMiddleware(http.HandlerFunc(uCon.CreateHandler)))
-	// /user/getと/user/updateではX-Tokenが必要なのでmiddlewareを適用
-	mux.Handle("/user/get", middleware.XTokenAuthMiddleware(middleware.JSONContentTypeMiddleware(http.HandlerFunc(uCon.GetHandler)), uRep))
-	mux.Handle("/user/update", middleware.XTokenAuthMiddleware(http.HandlerFunc(uCon.UpdateNameHandler), uRep))
+	// Routes that require X-Token authentication
+	authGroup := e.Group("", middleware.XTokenAuthMiddleware(uRep))
+	authGroup.GET("/user/get", uCon.GetHandler)
+	authGroup.PUT("/user/update", uCon.UpdateNameHandler)
+	authGroup.POST("/gacha/draw", gdCon.DrawHandler)
+	authGroup.GET("/character/list", ucCon.GetListHandler)
 
-	// /gacha/drawではX-Tokenが必要なのでmiddlewareを適用
-	mux.Handle("/gacha/draw", middleware.XTokenAuthMiddleware(middleware.JSONContentTypeMiddleware(http.HandlerFunc(gdCon.DrawHandler)), uRep))
-
-	// /character/listではX-Tokenが必要なのでmiddlewareを適用
-	mux.Handle("/character/list", middleware.XTokenAuthMiddleware(middleware.JSONContentTypeMiddleware(http.HandlerFunc(ucCon.GetListHandler)), uRep))
-
-	return mux
+	return e
 }
