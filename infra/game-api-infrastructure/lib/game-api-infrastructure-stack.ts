@@ -10,6 +10,7 @@ import { BastionResources } from './constructs/bastion-resources';
 import { EcsFargateResources } from './constructs/ecs-fargate-resources';
 import { AlbResources } from './constructs/alb-resources';
 import { CiCdResources } from './constructs/cicd-resources';
+import { LambdaByS3Resources } from './constructs/lambda-by-s3-resources';
 
 
 interface GameApiInfrastructureStackProps extends cdk.StackProps {
@@ -55,6 +56,14 @@ export class GameApiInfrastructureStack extends cdk.Stack {
       eventBridgeEnabled: true,
     });
 
+    // LambdaByS3Resources をインスタンス化
+    const lambdaByS3Resources = new LambdaByS3Resources(this, `LambdaByS3Resources-${env}`, {
+      env,
+      vpc: networkResources.vpc,
+      lambdaSecurityGroup: networkResources.lambdaSecurityGroup,
+      databaseResources: databaseResources,
+      s3Bucket: charactersBucket
+    });
     
     // ECR Repositoryの作成
     const ecrRepository = new ecr.Repository(this, `EcrRepository-${env}`, {

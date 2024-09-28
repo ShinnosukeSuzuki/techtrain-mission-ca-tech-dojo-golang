@@ -13,6 +13,7 @@ export class NetworkResources extends Construct {
   public readonly ecsSecurityGroup: ec2.ISecurityGroup;
   public readonly rdsSecurityGroup: ec2.ISecurityGroup;
   public readonly bastionSecurityGroup: ec2.ISecurityGroup;
+  public readonly lambdaSecurityGroup: ec2.ISecurityGroup;
 
   constructor(scope: Construct, id: string, props: NetworkResourcesProps) {
     super(scope, id);
@@ -77,6 +78,12 @@ export class NetworkResources extends Construct {
       allowAllOutbound: true,
     });
 
+    this.lambdaSecurityGroup = new ec2.SecurityGroup(this, 'LambdaSecurityGroup', {
+      vpc: this.vpc,
+      securityGroupName: `Game-API-LambdaSecurityGroup-${env}`,
+      allowAllOutbound: true,
+    });
+
     // ALB, ECS, RDS, 踏み台のセキュリティグループのインバウンドルールの設定
     // 家のIPアドレスからのみALBにアクセス可能
     this.albSecurityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(80), 'Allow HTTP traffic from anywhere');
@@ -85,8 +92,9 @@ export class NetworkResources extends Construct {
     this.ecsSecurityGroup.addIngressRule(this.albSecurityGroup, ec2.Port.tcp(8080), 'Allow HTTP traffic from ALB');
     this.ecsSecurityGroup.addIngressRule(this.albSecurityGroup, ec2.Port.tcp(9100), 'Allow Node Exporter traffic from ALB');
     
-    // ECSとBastionからのみRDSにアクセス可能
+    // ECSとBastion, lambdaからのみRDSにアクセス可能
     this.rdsSecurityGroup.addIngressRule(this.ecsSecurityGroup, ec2.Port.tcp(3306), 'Allow MySQL traffic from ECS');
     this.rdsSecurityGroup.addIngressRule(this.bastionSecurityGroup, ec2.Port.tcp(3306), 'Allow MySQL traffic from Bastion');
+    this.rdsSecurityGroup.addIngressRule(this.lambdaSecurityGroup, ec2.Port.tcp(3306), 'Allow MySQL traffic from Lambda');
   }
 }
