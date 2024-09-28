@@ -9,6 +9,7 @@
         - public subnet : ALBを配置
         - private subnet : ECS task, 踏み台サーバーを配置
         - isolated subnet : RDSを配置
+        - s3VpcEndpoint : S3用のGatewayVpcEndpoint
     - SecurityGroup
         - ALB SecurityGroup : port 80で全てのIPからのみ許可
         - ECS SecurityGroup : port 8080でALB SecurityGroupのみ許可
@@ -16,6 +17,12 @@
         - Bastion SecurityGroup : 許可なし(ssmを使用するためport 22は開けない)
 - database-resources
     - RDS(t3.micro)
+- character-bucket-{$env} : マスターデータであるcharactersテーブルの情報を保存するバケット
+    - monster_data.csv : マスターデータであるcharactersテーブルの情報(データは[パズドラモンスターデータベース](https://padmdb.rainbowsite.net/about)からレア度が1以外のもの取得し、charactersの確率はレア度の逆数とした。)
+- lambda-by-s3-resources
+    - lambda-layer : lambdaを実行するのに必要なライブラリを保存。作成方法は[記事](https://qiita.com/kt215prg/items/d934c92226524a88714f)を参考にdocker上で行った。
+    - lambda(python3.9) : s3にアップロードされたmonster_data.csvを元にcharactersテーブルの情報を更新する。
+    - rule : S3バケット(character-bucket-{$env})へのアップロードをトリガーにlambdaを起動。
 - bastion-resources
     - 踏み台サーバー(t2.micro) : ssmでポートフォワードしRDSに接続するため。
 - alb-resources

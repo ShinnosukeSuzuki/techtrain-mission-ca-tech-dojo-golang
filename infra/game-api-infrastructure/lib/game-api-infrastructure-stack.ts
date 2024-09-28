@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import { NetworkResources } from './constructs/network-resources';
 import { DatabaseResources } from './constructs/database-resources';
@@ -9,6 +10,7 @@ import { BastionResources } from './constructs/bastion-resources';
 import { EcsFargateResources } from './constructs/ecs-fargate-resources';
 import { AlbResources } from './constructs/alb-resources';
 import { CiCdResources } from './constructs/cicd-resources';
+import { LambdaByS3Resources } from './constructs/lambda-by-s3-resources';
 
 
 interface GameApiInfrastructureStackProps extends cdk.StackProps {
@@ -45,6 +47,22 @@ export class GameApiInfrastructureStack extends cdk.Stack {
       env,
       vpc: networkResources.vpc,
       albSecurityGroup: networkResources.albSecurityGroup
+    });
+
+    // characterのマスターデータを保存するS3バケットを作成
+    const charactersBucket = new s3.Bucket(this, `CharacterBucket${env}`, {
+      bucketName: `character-bucket-${env.toLowerCase()}`,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      eventBridgeEnabled: true,
+    });
+
+    // LambdaByS3Resources をインスタンス化
+    const lambdaByS3Resources = new LambdaByS3Resources(this, `LambdaByS3Resources-${env}`, {
+      env,
+      vpc: networkResources.vpc,
+      lambdaSecurityGroup: networkResources.lambdaSecurityGroup,
+      databaseResources: databaseResources,
+      s3Bucket: charactersBucket
     });
     
     // ECR Repositoryの作成
