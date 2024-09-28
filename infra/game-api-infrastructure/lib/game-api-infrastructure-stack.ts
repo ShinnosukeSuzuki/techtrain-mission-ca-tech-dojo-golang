@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import { NetworkResources } from './constructs/network-resources';
 import { DatabaseResources } from './constructs/database-resources';
@@ -46,6 +47,14 @@ export class GameApiInfrastructureStack extends cdk.Stack {
       vpc: networkResources.vpc,
       albSecurityGroup: networkResources.albSecurityGroup
     });
+
+    // characterのマスターデータを保存するS3バケットを作成
+    const charactersBucket = new s3.Bucket(this, `CharacterBucket${env}`, {
+      bucketName: `character-bucket-${env.toLowerCase()}`,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      eventBridgeEnabled: true,
+    });
+
     
     // ECR Repositoryの作成
     const ecrRepository = new ecr.Repository(this, `EcrRepository-${env}`, {
