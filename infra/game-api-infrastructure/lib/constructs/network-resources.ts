@@ -8,6 +8,7 @@ export interface NetworkResourcesProps {
 
 export class NetworkResources extends Construct {
   public readonly vpc: ec2.IVpc;
+  public readonly s3VpcEndpoint: ec2.IVpcEndpoint;
   public readonly albSecurityGroup: ec2.ISecurityGroup;
   public readonly ecsSecurityGroup: ec2.ISecurityGroup;
   public readonly rdsSecurityGroup: ec2.ISecurityGroup;
@@ -44,6 +45,11 @@ export class NetworkResources extends Construct {
           subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
         }
       ],
+    });
+
+    // S3 VPC Endpointを作成
+    this.s3VpcEndpoint = this.vpc.addGatewayEndpoint('S3Endpoint', {
+      service: ec2.GatewayVpcEndpointAwsService.S3,
     });
 
     // ALB, ECS, RDS, 踏み台のセキュリティグループの作成
