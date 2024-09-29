@@ -53,8 +53,8 @@ export class DatabaseResources extends Construct {
       }),
       databaseName: 'db',
       instanceIdentifier: `game-api-rds-${env}`,
-      // インスタンスタイプを t3.micro に設定
-      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
+      // インスタンスタイプを t3.medium に設定
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM),
       vpc,
       vpcSubnets: {
         subnetType: ec2.SubnetType.PRIVATE_ISOLATED
@@ -62,6 +62,8 @@ export class DatabaseResources extends Construct {
       securityGroups: [rdsSecurityGroup],
       parameterGroup: this.parameterGroup,
       credentials: rds.Credentials.fromSecret(this.adminUserPassword),
+      enablePerformanceInsights: true,
+      performanceInsightRetention: rds.PerformanceInsightRetention.DEFAULT,
       removalPolicy: cdk.RemovalPolicy.DESTROY
     });
   }
