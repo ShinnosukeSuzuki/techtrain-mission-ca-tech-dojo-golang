@@ -33,7 +33,7 @@ func (c *UserCharacterController) GetListHandler(ctx echo.Context) error {
 	}
 
 	if len(characterList.Characters) == 0 {
-		characterList.Characters = []models.UserCharacter{}
+		characterList.Characters = []models.UserCharacterDetail{}
 	}
 
 	characters := make([]UserCharacter, 0, len(characterList.Characters))
