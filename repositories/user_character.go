@@ -22,10 +22,9 @@ func NewUserCharacterRepository(db *sql.DB) UserCharacterRepository {
 // userのidに一致するキャラクターを取得する
 func (r *UserCharacterRepository) GetList(userID string) ([]models.UserCharacter, error) {
 	const query = `
-		SELECT uc.id, uc.character_id, c.name
-		FROM users_characters as uc
-		JOIN characters as c ON uc.character_id = c.id
-		WHERE uc.user_id = ?;
+		SELECT id, character_id
+		FROM users_characters
+		WHERE user_id = ?;
 	`
 
 	rows, err := r.db.Query(query, userID)
@@ -37,7 +36,7 @@ func (r *UserCharacterRepository) GetList(userID string) ([]models.UserCharacter
 	var userCharacters []models.UserCharacter
 	for rows.Next() {
 		var userCharacter models.UserCharacter
-		if err := rows.Scan(&userCharacter.UserCharacterID, &userCharacter.CharacterID, &userCharacter.Name); err != nil {
+		if err := rows.Scan(&userCharacter.UserCharacterID, &userCharacter.CharacterID); err != nil {
 			return nil, err
 		}
 		userCharacters = append(userCharacters, userCharacter)
