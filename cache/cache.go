@@ -5,13 +5,11 @@ import (
 	"log"
 	"strconv"
 	"sync"
-	"time"
 
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/go-co-op/gocron/v2"
 )
 
 type CharacterProbabilityCache struct {
@@ -23,7 +21,6 @@ type CharacterProbabilityCache struct {
 	s3Client                *s3.S3
 	bucketName              string
 	filePath                string
-	scheduler               gocron.Scheduler
 }
 
 func NewCharacterProbabilityCache(region, bucketName, filePath string) (*CharacterProbabilityCache, error) {
@@ -48,46 +45,6 @@ func NewCharacterProbabilityCache(region, bucketName, filePath string) (*Charact
 	}
 
 	return cache, nil
-}
-
-func (c *CharacterProbabilityCache) StartCron() error {
-	// cron実行をJSTで行うための設定
-	jst, err := time.LoadLocation("Asia/Tokyo")
-	if err != nil {
-		return err
-	}
-
-	s, err := gocron.NewScheduler(gocron.WithLocation(jst))
-	if err != nil {
-		return err
-	}
-
-	_, err = s.NewJob(
-		// 毎日0時に実行
-		gocron.CronJob("0 0 * * *", false),
-		gocron.NewTask(
-			func() {
-				if err := c.Update(); err != nil {
-					log.Printf("Failed to update cache: %v", err)
-				}
-			},
-		),
-	)
-
-	if err != nil {
-		return err
-	}
-
-	c.scheduler = s
-	s.Start()
-	return nil
-}
-
-func (c *CharacterProbabilityCache) StopCron() error {
-	if c.scheduler != nil {
-		return c.scheduler.Shutdown()
-	}
-	return nil
 }
 
 func (c *CharacterProbabilityCache) Update() error {

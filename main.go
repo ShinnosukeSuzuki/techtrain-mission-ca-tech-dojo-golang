@@ -10,6 +10,7 @@ import (
 
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/api"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/cache"
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/cron"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/db"
 	_ "github.com/go-sql-driver/mysql"
 	"golang.org/x/sync/errgroup"
@@ -39,11 +40,21 @@ func main() {
 		log.Fatalf("Failed to initialize cache: %v", err)
 	}
 
-	// キャッシュの定期更新を開始
-	err = characterCache.StartCron()
+	// cronジョブを作成
+	cronJob, err := cron.NewCronJob()
 	if err != nil {
-		log.Fatalf("Failed to start cron cache update: %v", err)
+		log.Fatalf("Failed to create cron: %v", err)
 	}
+
+	// キャッシュ更新ジョブを追加（毎日午前0時に実行）
+	err = cronJob.AddJob("0 0 * * *", characterCache.Update)
+	if err != nil {
+		log.Fatalf("Failed to add cache update to cron: %v", err)
+	}
+
+	// cronを開始
+	cronJob.Start()
+	log.Println("cron job started")
 
 	// ルーターを作成
 	e := api.NewRouter(db, characterCache)
@@ -62,8 +73,8 @@ func main() {
 		defer cancel()
 
 		// キャッシュの定期更新を停止
-		if err := characterCache.StopCron(); err != nil {
-			log.Printf("Failed to stop cron cache update: %v", err)
+		if err := cronJob.Stop(); err != nil {
+			log.Printf("Failed to stop cron: %v", err)
 		}
 
 		// サーバーをシャットダウン
