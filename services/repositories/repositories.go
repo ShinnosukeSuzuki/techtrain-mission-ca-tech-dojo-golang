@@ -1,6 +1,9 @@
 package repositories
 
+import (
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/dto"
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
+)
 
 // User関連を引き受けるリポジトリインターフェース
 type UserRepository interface {
@@ -17,6 +20,6 @@ type CharacterRepository interface {
 
 // UserCharacter関連を引き受けるリポジトリインターフェース
 type UserCharacterRepository interface {
-	GetList(userID string) ([]models.UserCharacter, error)
+	GetList(userID string) ([]dto.UserCharacter, error)
 	InsertBulk(userID string, characters []models.GachaResult) error
 }

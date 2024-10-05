@@ -19,7 +19,7 @@ func NewUserCharacterService(r repositories.UserCharacterRepository, characterCa
 
 // ハンドラー GetListHandler 用のサービスメソッド
 func (s *UserCharacterService) List(userID string) (models.CharacterList, error) {
-	userCharacters, err := s.ucRep.GetList(userID)
+	dtoUserCharacters, err := s.ucRep.GetList(userID)
 	if err != nil {
 		return models.CharacterList{}, err
 	}
@@ -29,9 +29,9 @@ func (s *UserCharacterService) List(userID string) (models.CharacterList, error)
 
 	// キャラクターIDをキャラクター名に変換
 	var userCharacterDetails []models.UserCharacterDetail
-	for _, uc := range userCharacters {
+	for _, uc := range dtoUserCharacters {
 		userCharacterDetails = append(userCharacterDetails, models.UserCharacterDetail{
-			UserCharacterID: uc.UserCharacterID,
+			UserCharacterID: uc.ID,
 			CharacterID:     uc.CharacterID,
 			Name:            characterNameMap[uc.CharacterID],
 		})

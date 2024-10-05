@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/dto"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/pkg/uuid"
 )
@@ -20,7 +21,7 @@ func NewUserCharacterRepository(db *sql.DB) UserCharacterRepository {
 }
 
 // userのidに一致するキャラクターを取得する
-func (r *UserCharacterRepository) GetList(userID string) ([]models.UserCharacter, error) {
+func (r *UserCharacterRepository) GetList(userID string) ([]dto.UserCharacter, error) {
 	const query = `
 		SELECT id, character_id
 		FROM users_characters
@@ -33,10 +34,10 @@ func (r *UserCharacterRepository) GetList(userID string) ([]models.UserCharacter
 	}
 	defer rows.Close()
 
-	var userCharacters []models.UserCharacter
+	var userCharacters []dto.UserCharacter
 	for rows.Next() {
-		var userCharacter models.UserCharacter
-		if err := rows.Scan(&userCharacter.UserCharacterID, &userCharacter.CharacterID); err != nil {
+		var userCharacter dto.UserCharacter
+		if err := rows.Scan(&userCharacter.ID, &userCharacter.CharacterID); err != nil {
 			return nil, err
 		}
 		userCharacters = append(userCharacters, userCharacter)
