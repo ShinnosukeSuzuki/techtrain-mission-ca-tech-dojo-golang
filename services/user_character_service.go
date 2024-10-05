@@ -28,9 +28,9 @@ func (s *UserCharacterService) List(userID string) (models.CharacterList, error)
 	characterNameMap := s.characterCache.GetNameMap()
 
 	// キャラクターIDをキャラクター名に変換
-	var userCharacterDetails []models.UserCharacterDetail
+	var userCharacterDetails []models.UserCharacter
 	for _, uc := range dtoUserCharacters {
-		userCharacterDetails = append(userCharacterDetails, models.UserCharacterDetail{
+		userCharacterDetails = append(userCharacterDetails, models.UserCharacter{
 			UserCharacterID: uc.ID,
 			CharacterID:     uc.CharacterID,
 			Name:            characterNameMap[uc.CharacterID],
