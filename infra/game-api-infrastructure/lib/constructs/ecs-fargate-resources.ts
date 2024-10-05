@@ -62,6 +62,7 @@ export class EcsFargateResources extends Construct {
       }),
       environment: {
         DOCKER_ENV: 'true',
+        TZ: 'Asia/Tokyo',
         REGION: cdk.Stack.of(this).region,
         BUCKET_NAME: charactersBucket.bucketName,
         FILE_PATH: 'monster_data.csv',
