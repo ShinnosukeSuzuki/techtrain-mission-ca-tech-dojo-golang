@@ -21,5 +21,5 @@ type CharacterRepository interface {
 // UserCharacter関連を引き受けるリポジトリインターフェース
 type UserCharacterRepository interface {
 	GetList(userID string) ([]dto.UserCharacter, error)
-	InsertBulk(userID string, characters []models.GachaResult) error
+	InsertBulk(userID string, characters []models.Character) error
 }

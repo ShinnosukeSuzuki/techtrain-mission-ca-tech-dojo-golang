@@ -47,7 +47,7 @@ func (r *UserCharacterRepository) GetList(userID string) ([]dto.UserCharacter, e
 }
 
 // ガチャ結果をusers_charactersテーブルにバルクインサートする
-func (r *UserCharacterRepository) InsertBulk(userID string, gachaResults []models.GachaResult) error {
+func (r *UserCharacterRepository) InsertBulk(userID string, gachaResults []models.Character) error {
 	if len(gachaResults) == 0 {
 		return nil
 	}
@@ -59,7 +59,7 @@ func (r *UserCharacterRepository) InsertBulk(userID string, gachaResults []model
 		valueStrings = append(valueStrings, "(?, ?, ?)")
 		valueArgs = append(valueArgs, uuid.GenerateUUID())
 		valueArgs = append(valueArgs, userID)
-		valueArgs = append(valueArgs, g.CharacterID)
+		valueArgs = append(valueArgs, g.ID)
 	}
 
 	// クエリ文字列を生成

@@ -20,7 +20,7 @@ func NewGachaDrawService(ucRep repositories.UserCharacterRepository, characterCa
 }
 
 // ハンドラー GachaDrawHandler 用のサービスメソッド
-func (s *GachaDrawService) Draw(times int, userID string) ([]models.GachaResult, error) {
+func (s *GachaDrawService) Draw(times int, userID string) ([]models.Character, error) {
 	// キャラクター全件取得をキャッシュから取得
 	characters, cumulativeProbabilities, totalProbability, _ := s.characterCache.GetData()
 
@@ -39,7 +39,7 @@ func (s *GachaDrawService) Draw(times int, userID string) ([]models.GachaResult,
 // キャラクターの確率に応じてランダムにキャラクターを選択する
 func selectRandomCharacters(times int, characters []models.Character, cumulativeProbabilities []float64, totalProbability float64) []models.GachaResult {
 
-	gachaResults := make([]models.GachaResult, times)
+	gachaResults := make([]models.Character, times)
 
 	for i := 0; i < times; i++ {
 		// 0~totalProbabilityの範囲で乱数を生成
@@ -56,12 +56,7 @@ func selectRandomCharacters(times int, characters []models.Character, cumulative
 			}
 		}
 
-		selectedChar := characters[left]
-
-		gachaResults[i] = models.GachaResult{
-			CharacterID: selectedChar.ID,
-			Name:        selectedChar.Name,
-		}
+		gachaResults[i] = characters[left]
 	}
 
 	return gachaResults

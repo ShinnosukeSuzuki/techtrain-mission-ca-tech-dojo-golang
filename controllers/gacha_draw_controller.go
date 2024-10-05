@@ -46,7 +46,7 @@ func (c *GachaDrawController) DrawHandler(ctx echo.Context) error {
 	gachaResults := make([]GachaResult, 0, len(results))
 	for _, character := range results {
 		gachaResults = append(gachaResults, GachaResult{
-			CharacterID: character.CharacterID,
+			CharacterID: character.ID,
 			Name:        character.Name,
 		})
 	}

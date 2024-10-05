@@ -13,7 +13,7 @@ type UserServicer interface {
 
 // GacheDraw関連を引き受けるサービス
 type GachaDrawServicer interface {
-	Draw(times int, userID string) ([]models.GachaResult, error)
+	Draw(times int, userID string) ([]models.Character, error)
 }
 
 // UserCharacter関連を引き受けるサービス
