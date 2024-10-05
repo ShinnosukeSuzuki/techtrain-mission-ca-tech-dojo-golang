@@ -12,7 +12,7 @@ type UserRepository interface {
 
 // Character関連を引き受けるリポジトリインターフェース
 type CharacterRepository interface {
-	GetAllList() ([]models.Character, error)
+	GetAllList() ([]dto.Character, error)
 }
 
 // UserCharacter関連を引き受けるリポジトリインターフェース
