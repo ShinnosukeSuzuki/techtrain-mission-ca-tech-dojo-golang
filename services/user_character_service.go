@@ -25,7 +25,7 @@ func (s *UserCharacterService) List(userID string) (models.CharacterList, error)
 	}
 
 	// キャッシュからキャラクター情報を取得
-	_, _, _, characterNameMap := s.characterCache.GetData()
+	characterNameMap := s.characterCache.GetNameMap()
 
 	// キャラクターIDをキャラクター名に変換
 	var userCharacterDetails []models.UserCharacterDetail

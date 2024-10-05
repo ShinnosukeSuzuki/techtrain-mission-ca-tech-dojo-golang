@@ -15,7 +15,6 @@ import (
 type CharacterProbabilityCache struct {
 	Characters              []models.Character
 	CumulativeProbabilities []float64
-	TotalProbability        float64
 	CharacterNameMap        map[string]string
 	mutex                   sync.RWMutex
 	s3Client                *s3.S3
@@ -32,7 +31,6 @@ func NewCharacterProbabilityCache(region, bucketName, filePath string) (*Charact
 	cache := &CharacterProbabilityCache{
 		Characters:              []models.Character{},
 		CumulativeProbabilities: []float64{},
-		TotalProbability:        0,
 		CharacterNameMap:        map[string]string{},
 		s3Client:                s3Client,
 		bucketName:              bucketName,
@@ -78,9 +76,8 @@ func (c *CharacterProbabilityCache) Update() error {
 			continue
 		}
 		newCharacters = append(newCharacters, models.Character{
-			ID:          r[0],
-			Name:        r[1],
-			Probability: p,
+			ID:   r[0],
+			Name: r[1],
 		})
 		newTotalProbability += p
 		newCumulativeProbabilities = append(newCumulativeProbabilities, newTotalProbability)
@@ -90,7 +87,6 @@ func (c *CharacterProbabilityCache) Update() error {
 	c.mutex.Lock()
 	c.Characters = newCharacters
 	c.CumulativeProbabilities = newCumulativeProbabilities
-	c.TotalProbability = newTotalProbability
 	c.CharacterNameMap = newCharacterNameMap
 	c.mutex.Unlock()
 
@@ -98,9 +94,16 @@ func (c *CharacterProbabilityCache) Update() error {
 	return nil
 }
 
-func (c *CharacterProbabilityCache) GetData() ([]models.Character, []float64, float64, map[string]string) {
+func (c *CharacterProbabilityCache) GetDataForGacha() ([]models.Character, []float64) {
 	// 読み込み用ロックを使うことで待ち時間を短縮
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
-	return c.Characters, c.CumulativeProbabilities, c.TotalProbability, c.CharacterNameMap
+	return c.Characters, c.CumulativeProbabilities
+}
+
+func (c *CharacterProbabilityCache) GetNameMap() map[string]string {
+	// 読み込み用ロックを使うことで待ち時間を短縮
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
+	return c.CharacterNameMap
 }
