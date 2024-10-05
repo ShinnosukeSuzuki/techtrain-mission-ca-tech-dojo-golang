@@ -1,12 +1,12 @@
 package repositories
 
-import "github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/dto"
 
 // User関連を引き受けるリポジトリインターフェース
 type UserRepository interface {
-	Create(name string, token string) (models.User, error)
-	GetByToken(token string) (models.User, error)
-	GetById(userID string) (models.User, error)
+	Create(name string, token string) (dto.User, error)
+	GetByToken(token string) (dto.User, error)
+	GetById(userID string) (dto.User, error)
 	UpdateName(userID, name string) error
 }
 

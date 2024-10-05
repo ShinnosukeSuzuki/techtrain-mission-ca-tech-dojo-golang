@@ -3,7 +3,7 @@ package repositories
 import (
 	"database/sql"
 
-	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/dto"
 )
 
 // リポジトリ構造体を定義
@@ -17,7 +17,7 @@ func NewUserRepository(db *sql.DB) UserRepository {
 }
 
 // nameとtokenから新規ユーザーを作成する
-func (r *UserRepository) Create(id, name, token string) (models.User, error) {
+func (r *UserRepository) Create(id, name, token string) (dto.User, error) {
 	const query = `
 		INSERT INTO users (id, name, token)
 		VALUES (?, ?, ?);
@@ -25,10 +25,10 @@ func (r *UserRepository) Create(id, name, token string) (models.User, error) {
 
 	_, err := r.db.Exec(query, id, name, token)
 	if err != nil {
-		return models.User{}, err
+		return dto.User{}, err
 	}
 
-	var newUser models.User
+	var newUser dto.User
 	newUser.ID = id
 	newUser.Name = name
 	newUser.Token = token
@@ -37,34 +37,34 @@ func (r *UserRepository) Create(id, name, token string) (models.User, error) {
 }
 
 // tokenからユーザーを取得する
-func (r *UserRepository) GetByToken(token string) (models.User, error) {
+func (r *UserRepository) GetByToken(token string) (dto.User, error) {
 	const query = `
 		SELECT id, name, token
 		FROM users
 		WHERE token = ?;
 	`
 
-	var user models.User
+	var user dto.User
 	err := r.db.QueryRow(query, token).Scan(&user.ID, &user.Name, &user.Token)
 	if err != nil {
-		return models.User{}, err
+		return dto.User{}, err
 	}
 
 	return user, nil
 }
 
 // idからユーザーを取得する
-func (r *UserRepository) GetById(userID string) (models.User, error) {
+func (r *UserRepository) GetById(userID string) (dto.User, error) {
 	const query = `
 		SELECT id, name, token
 		FROM users
 		WHERE id = ?;
 	`
 
-	var user models.User
+	var user dto.User
 	err := r.db.QueryRow(query, userID).Scan(&user.ID, &user.Name, &user.Token)
 	if err != nil {
-		return models.User{}, err
+		return dto.User{}, err
 	}
 
 	return user, nil
