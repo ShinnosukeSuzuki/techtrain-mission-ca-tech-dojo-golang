@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/api/middleware"
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/cache"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/controllers"
 
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/repositories"
@@ -11,18 +12,17 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func NewRouter(db *sql.DB) *echo.Echo {
+func NewRouter(db *sql.DB, characterCache *cache.CharacterProbabilityCache) *echo.Echo {
 	e := echo.New()
 
 	// Repositories
 	uRep := repositories.NewUserRepository(db)
 	ucRep := repositories.NewUserCharacterRepository(db)
-	cRep := repositories.NewCharacterRepository(db)
 
 	// Services
 	uSer := services.NewUserService(uRep)
-	ucSer := services.NewUserCharacterService(ucRep)
-	gdSer := services.NewGachaDrawService(ucRep, cRep)
+	ucSer := services.NewUserCharacterService(ucRep, characterCache)
+	gdSer := services.NewGachaDrawService(ucRep, characterCache)
 
 	// Controllers
 	hCon := controllers.NewHealthCheckController()

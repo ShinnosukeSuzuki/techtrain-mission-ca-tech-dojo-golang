@@ -3,7 +3,7 @@ package repositories
 import (
 	"database/sql"
 
-	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/dto"
 )
 
 // リポジトリ構造体を定義
@@ -17,7 +17,7 @@ func NewCharacterRepository(db *sql.DB) CharacterRepository {
 }
 
 // キャラクター全件取得
-func (r *CharacterRepository) GetAllList() ([]models.Character, error) {
+func (r *CharacterRepository) GetAllList() ([]dto.Character, error) {
 	const query = `SELECT id, name, probability FROM characters;`
 
 	rows, err := r.db.Query(query)
@@ -26,9 +26,9 @@ func (r *CharacterRepository) GetAllList() ([]models.Character, error) {
 	}
 	defer rows.Close()
 
-	var characters []models.Character
+	var characters []dto.Character
 	for rows.Next() {
-		var character models.Character
+		var character dto.Character
 		if err := rows.Scan(&character.ID, &character.Name, &character.Probability); err != nil {
 			return nil, err
 		}

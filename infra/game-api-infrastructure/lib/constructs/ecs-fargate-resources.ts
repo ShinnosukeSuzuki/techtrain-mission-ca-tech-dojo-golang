@@ -3,6 +3,7 @@ import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as secrets from "aws-cdk-lib/aws-secretsmanager";
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import { Construct } from 'constructs';
@@ -13,6 +14,7 @@ export interface EcsFargateResourcesProps {
   readonly ecsSecurityGroup: ec2.ISecurityGroup;
   readonly ecrRepository: ecr.IRepository;
   readonly ecrRepositoryTag: string;
+  readonly charactersBucket: s3.IBucket;
   readonly adminUserPassword: secrets.Secret;
   readonly cpu: number;
   readonly httpListener: elbv2.ApplicationListener;
@@ -28,7 +30,7 @@ export class EcsFargateResources extends Construct {
   constructor(scope: Construct, id: string, props: EcsFargateResourcesProps) {
     super(scope, id);
 
-    const { env, vpc, ecsSecurityGroup, ecrRepository, ecrRepositoryTag, adminUserPassword, cpu, httpListener } = props;
+    const { env, vpc, ecsSecurityGroup, ecrRepository, ecrRepositoryTag, charactersBucket, adminUserPassword, cpu, httpListener } = props;
 
     // ECS Clusterの作成
     this.ecsCluster = new ecs.Cluster(this, 'EcsCluster', {
@@ -42,6 +44,9 @@ export class EcsFargateResources extends Construct {
       cpu: 1024 * cpu,
       memoryLimitMiB: 2048 * cpu,
     });
+
+    // taskにcharactersBucketへの読み取り権限を付与
+    charactersBucket.grantRead(this.taskDefinition.taskRole);
 
     // APIサーバーコンテナの追加
     const apiContainer = this.taskDefinition.addContainer('ApiContainer', {
@@ -57,6 +62,9 @@ export class EcsFargateResources extends Construct {
       }),
       environment: {
         DOCKER_ENV: 'true',
+        REGION: cdk.Stack.of(this).region,
+        BUCKET_NAME: charactersBucket.bucketName,
+        FILE_PATH: 'monster_data.csv',
       },
       secrets: {
         DATABASE: ecs.Secret.fromSecretsManager(adminUserPassword, 'dbname'),

@@ -3,33 +3,29 @@ package services
 import (
 	"math/rand/v2"
 
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/cache"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/repositories"
 )
 
 // サービス構造体を定義
 type GachaDrawService struct {
-	// UserCharacterRepositoryを埋め込む
-	ucRep repositories.UserCharacterRepository
-	// CharacterRepositoryを埋め込む
-	cRep repositories.CharacterRepository
+	ucRep          repositories.UserCharacterRepository
+	characterCache *cache.CharacterProbabilityCache
 }
 
 // サービスのコンストラクタ
-func NewGachaDrawService(ucRep repositories.UserCharacterRepository, cRep repositories.CharacterRepository) *GachaDrawService {
-	return &GachaDrawService{ucRep: ucRep, cRep: cRep}
+func NewGachaDrawService(ucRep repositories.UserCharacterRepository, characterCache *cache.CharacterProbabilityCache) *GachaDrawService {
+	return &GachaDrawService{ucRep: ucRep, characterCache: characterCache}
 }
 
 // ハンドラー GachaDrawHandler 用のサービスメソッド
-func (s *GachaDrawService) Draw(times int, userID string) ([]models.GachaResult, error) {
-	// キャラクター全件取得
-	characters, err := s.cRep.GetAllList()
-	if err != nil {
-		return nil, err
-	}
+func (s *GachaDrawService) Draw(times int, userID string) ([]models.Character, error) {
+	// キャラクター全件取得をキャッシュから取得
+	characters, cumulativeProbabilities := s.characterCache.GetDataForGacha()
 
 	// ガチャを行いキャラクターを選択
-	gachaResults := selectRandomCharacters(characters, times)
+	gachaResults := selectRandomCharacters(times, characters, cumulativeProbabilities)
 
 	// ガチャの結果をDBにバルクインサート
 	if err := s.ucRep.InsertBulk(userID, gachaResults); err != nil {
@@ -41,25 +37,13 @@ func (s *GachaDrawService) Draw(times int, userID string) ([]models.GachaResult,
 
 // ガチャロジックを実装する
 // キャラクターの確率に応じてランダムにキャラクターを選択する
-func selectRandomCharacters(characters []models.Character, times int) []models.GachaResult {
-	// キャラクターの確率の合計を計算
-	var totalProbability float64
-	for _, c := range characters {
-		totalProbability += c.Probability
-	}
+func selectRandomCharacters(times int, characters []models.Character, cumulativeProbabilities []float64) []models.Character {
 
-	gachaResults := make([]models.GachaResult, times)
-
-	// 累積確率を計算
-	cumulativeProbabilities := make([]float64, len(characters))
-	cumulativeProbabilities[0] = characters[0].Probability
-	for i := 1; i < len(characters); i++ {
-		cumulativeProbabilities[i] = cumulativeProbabilities[i-1] + characters[i].Probability
-	}
+	gachaResults := make([]models.Character, times)
 
 	for i := 0; i < times; i++ {
 		// 0~totalProbabilityの範囲で乱数を生成
-		randomValue := rand.Float64() * totalProbability
+		randomValue := rand.Float64() * cumulativeProbabilities[len(cumulativeProbabilities)-1]
 
 		// 二分探索で乱数に対応するキャラクターを選択
 		left, right := 0, len(cumulativeProbabilities)-1
@@ -72,12 +56,7 @@ func selectRandomCharacters(characters []models.Character, times int) []models.G
 			}
 		}
 
-		selectedChar := characters[left]
-
-		gachaResults[i] = models.GachaResult{
-			CharacterID: selectedChar.ID,
-			Name:        selectedChar.Name,
-		}
+		gachaResults[i] = characters[left]
 	}
 
 	return gachaResults

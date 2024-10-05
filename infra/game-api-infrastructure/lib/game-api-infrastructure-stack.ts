@@ -86,6 +86,7 @@ export class GameApiInfrastructureStack extends cdk.Stack {
       ecsSecurityGroup: networkResources.ecsSecurityGroup,
       ecrRepository,
       ecrRepositoryTag,
+      charactersBucket,
       adminUserPassword: databaseResources.adminUserPassword,
       cpu: 0.25,
       httpListener: albResources.httpListener

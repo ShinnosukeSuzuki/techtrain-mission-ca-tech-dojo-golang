@@ -1,6 +1,7 @@
 package services
 
 import (
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/dto"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/pkg/uuid"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/repositories"
@@ -23,10 +24,12 @@ func (s *UserService) Create(name string) (models.User, error) {
 	id := uuid.GenerateUUID()
 	token := uuid.GenerateUUID()
 
-	newUser, err := s.uRep.Create(id, name, token)
+	eu, err := s.uRep.Create(id, name, token)
 	if err != nil {
 		return models.User{}, err
 	}
+
+	newUser := dtoToModel(eu)
 
 	return newUser, nil
 }
@@ -34,10 +37,12 @@ func (s *UserService) Create(name string) (models.User, error) {
 // ハンドラー GetHandler 用のサービスメソッド
 func (s *UserService) Get(userID string) (models.User, error) {
 
-	user, err := s.uRep.GetById(userID)
+	eu, err := s.uRep.GetById(userID)
 	if err != nil {
 		return models.User{}, err
 	}
+
+	user := dtoToModel(eu)
 
 	return user, nil
 }
@@ -51,4 +56,13 @@ func (s *UserService) UpdateName(userID, name string) error {
 	}
 
 	return nil
+}
+
+// dto.User から models.User に変換する
+func dtoToModel(user dto.User) models.User {
+	return models.User{
+		ID:    user.ID,
+		Name:  user.Name,
+		Token: user.Token,
+	}
 }

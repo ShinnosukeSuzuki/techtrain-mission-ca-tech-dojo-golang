@@ -1,29 +1,43 @@
 package services
 
 import (
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/cache"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/repositories"
 )
 
 // サービス構造体を定義
 type UserCharacterService struct {
-	// UserCharacterRepositoryを埋め込む
-	ucRep repositories.UserCharacterRepository
+	ucRep          repositories.UserCharacterRepository
+	characterCache *cache.CharacterProbabilityCache
 }
 
 // サービスのコンストラクタ
-func NewUserCharacterService(r repositories.UserCharacterRepository) *UserCharacterService {
-	return &UserCharacterService{ucRep: r}
+func NewUserCharacterService(r repositories.UserCharacterRepository, characterCache *cache.CharacterProbabilityCache) *UserCharacterService {
+	return &UserCharacterService{ucRep: r, characterCache: characterCache}
 }
 
 // ハンドラー GetListHandler 用のサービスメソッド
 func (s *UserCharacterService) List(userID string) (models.CharacterList, error) {
-	userCharacters, err := s.ucRep.GetList(userID)
+	dtoUserCharacters, err := s.ucRep.GetList(userID)
 	if err != nil {
 		return models.CharacterList{}, err
 	}
 
-	characterList := models.CharacterList{Characters: userCharacters}
+	// キャッシュからキャラクター情報を取得
+	characterNameMap := s.characterCache.GetNameMap()
+
+	// キャラクターIDをキャラクター名に変換
+	var userCharacterDetails []models.UserCharacter
+	for _, uc := range dtoUserCharacters {
+		userCharacterDetails = append(userCharacterDetails, models.UserCharacter{
+			UserCharacterID: uc.ID,
+			CharacterID:     uc.CharacterID,
+			Name:            characterNameMap[uc.CharacterID],
+		})
+	}
+
+	characterList := models.CharacterList{Characters: userCharacterDetails}
 
 	return characterList, nil
 }
