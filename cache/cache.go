@@ -2,7 +2,9 @@ package cache
 
 import (
 	"encoding/csv"
+	"fmt"
 	"log"
+	"runtime"
 	"strconv"
 	"sync"
 
@@ -20,6 +22,12 @@ type CharacterProbabilityCache struct {
 	s3Client                *s3.S3
 	bucketName              string
 	filePath                string
+}
+
+type parsedRecord struct {
+	index       int
+	character   models.Character
+	probability float64
 }
 
 func NewCharacterProbabilityCache(region, bucketName, filePath string) (*CharacterProbabilityCache, error) {
@@ -56,32 +64,75 @@ func (c *CharacterProbabilityCache) Update() error {
 	defer resp.Body.Close()
 
 	reader := csv.NewReader(resp.Body)
+
+	// ヘッダー行を読み飛ばす
+	if _, err := reader.Read(); err != nil {
+		return fmt.Errorf("failed to read header: %w", err)
+	}
+
 	records, err := reader.ReadAll()
 	if err != nil {
 		return err
 	}
 
+	// ワーカー数を設定（CPU数の2倍を使用）
+	numWorkers := runtime.NumCPU() * 2
+
+	// チャネルの作成
+	jobs := make(chan struct {
+		index  int
+		record []string
+	}, len(records))
+	results := make(chan parsedRecord, len(records))
+	errors := make(chan error, numWorkers)
+
+	// ワーカーの起動
+	var wg sync.WaitGroup
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go worker(jobs, results, errors, &wg)
+	}
+
+	// ジョブの送信
+	for i, record := range records {
+		jobs <- struct {
+			index  int
+			record []string
+		}{i, record}
+	}
+	close(jobs)
+
+	// 全てのワーカーの完了を待つ
+	go func() {
+		wg.Wait()
+		close(results)
+		close(errors)
+	}()
+
+	// エラーチェック
+	for err := range errors {
+		if err != nil {
+			return fmt.Errorf("error in worker: %w", err)
+		}
+	}
+
+	// 結果の集計と順序付け
+	parsedRecords := make([]parsedRecord, len(records))
+	for result := range results {
+		parsedRecords[result.index] = result
+	}
+
+	// 累積確率の計算と最終データの作成
 	newCharacters := make([]models.Character, 0, len(records))
 	newCumulativeProbabilities := make([]float64, 0, len(records))
 	var newTotalProbability float64
 	newCharacterNameMap := make(map[string]string)
 
-	for _, r := range records {
-		// csvはID, Name, Probabilityの3つのカラムを持つことを前提とする
-		if len(r) != 3 {
-			continue
-		}
-		p, err := strconv.ParseFloat(r[2], 64)
-		if err != nil {
-			continue
-		}
-		newCharacters = append(newCharacters, models.Character{
-			ID:   r[0],
-			Name: r[1],
-		})
-		newTotalProbability += p
+	for _, r := range parsedRecords {
+		newCharacters = append(newCharacters, r.character)
+		newTotalProbability += r.probability
 		newCumulativeProbabilities = append(newCumulativeProbabilities, newTotalProbability)
-		newCharacterNameMap[r[0]] = r[1]
+		newCharacterNameMap[r.character.ID] = r.character.Name
 	}
 
 	c.mutex.Lock()
@@ -106,4 +157,30 @@ func (c *CharacterProbabilityCache) GetNameMap() map[string]string {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
 	return c.CharacterNameMap
+}
+
+func worker(jobs <-chan struct {
+	index  int
+	record []string
+}, results chan<- parsedRecord, errors chan<- error, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for job := range jobs {
+		if len(job.record) != 3 {
+			errors <- fmt.Errorf("invalid record length at index %d: %v", job.index, job.record)
+			continue
+		}
+		probability, err := strconv.ParseFloat(job.record[2], 64)
+		if err != nil {
+			errors <- fmt.Errorf("invalid probability at index %d: %w", job.index, err)
+			continue
+		}
+		results <- parsedRecord{
+			index: job.index,
+			character: models.Character{
+				ID:   job.record[0],
+				Name: job.record[1],
+			},
+			probability: probability,
+		}
+	}
 }
