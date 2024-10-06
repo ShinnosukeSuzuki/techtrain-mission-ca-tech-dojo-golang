@@ -2,7 +2,7 @@
 
 ## 概要
 TechTrain MISSION　[オンライン版　CA Tech Dojo サーバサイド (Go)編](https://techtrain.dev/missions/12) のリポジトリ。<br>
-スマートフォン向けゲームのAPIの開発を想定。<br>
+スマートフォン向けゲームのAPIの開発。<br>
 API仕様YAML: https://github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/blob/main/api-document.yaml<br>
 作成したAPIは以下の6つ。<br>
 - /user/create ユーザアカウント認証情報作成API
@@ -14,7 +14,7 @@ API仕様YAML: https://github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-doj
 
 ## デプロイ
 AWS ECS on Fargateを使ってデプロイした。<br>
-インフラ構成の詳細: https://github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/blob/main/infra/game-api-infrastructure/game-api-infrastructure.md
+[インフラ構成の詳細](https://github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/blob/main/infra/game-api-infrastructure/README.md)
 ## CICD
 CICDにはAWS CodePipelineとCodeBuildを使用した。<br>
 mainブランチへのpushをトリガーとし、mdファイルやinfraディレクトリの変更はトリガーから除いた。<br>
@@ -28,5 +28,9 @@ go api サーバーのサイドカーに[Node exporter](https://github.com/prome
 <br>
 ![alt text](infra/observation/grafana/grafana.png)
 
+## 工夫した点
+ガチャで排出するキャラクター情報をS3から取得し、ガチャのロジックで必要となる各キャラクターの累積確率などをキャッシュ化することでリクエストごとにDBからキャラクターを取得する必要がなくなり、より多くのリクエストを捌けるようにした。<br>
+[キャッシュ導入前後のガチャ実行APIにおける負荷テストの詳細](https://github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/blob/main/infra/performance-test/README.md)
+
 ## 使用技術
-Go(1.22.4), Echo(4.12.0), MySQL(8.0), AWS ECS, AWS RDS, AWS CodePipleline, AWS CodeBuild, AWS CDK, Prometheus, Grafana
+Go(1.22.4), Echo(4.12.0), MySQL(8.0), AWS ECS, AWS RDS, AWS CodePipleline, AWS CodeBuild, AWS Lambda, AWS S3, AWS CDK, Prometheus, Grafana
