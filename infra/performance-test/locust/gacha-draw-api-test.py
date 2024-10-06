@@ -7,6 +7,6 @@ class GachaDrawApiTest(HttpUser):
     # /gacha/draw ガチャ実行APIにリクエストを送信する
     def gacha_draw(self):
         headers = {
-            "x-token": "076a5b2c-97a9-49c7-b426-41f861386f8b"
+            "x-token": "c05b11df-5592-440d-9615-1911006ed112"
         }
         self.client.post("/gacha/draw", headers = headers, json={"times": 10})
