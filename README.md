@@ -5,12 +5,14 @@ TechTrain MISSION　[オンライン版　CA Tech Dojo サーバサイド (Go)�
 スマートフォン向けゲームのAPIの開発。<br>
 API仕様YAML: https://github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/blob/main/api-document.yaml<br>
 作成したAPIは以下の6つ。<br>
-- /user/create ユーザアカウント認証情報作成API
-- /user/get ユーザ情報取得API
-- /user/update ユーザ情報更新API
-- /gacha/draw ガチャ実行API
-- /character/list ユーザ所持キャラクター一覧取得API
-- /health-check ALB target groupのヘルスチェック用API
+| エンドポイント | メソッド | 説明 |
+|----------------|----------|------|
+| /user/create | POST | ユーザアカウント認証情報作成API |
+| /user/get | GET | ユーザ情報取得API |
+| /user/update | PUT | ユーザ情報更新API |
+| /gacha/draw | POST | ガチャ実行API |
+| /character/list | GET | ユーザ所持キャラクター一覧取得API |
+| /health-check | GET | ALB target groupのヘルスチェック用API |
 
 ## デプロイ
 AWS ECS on Fargateを使ってデプロイした。<br>
@@ -33,4 +35,4 @@ go api サーバーのサイドカーに[Node exporter](https://github.com/prome
 [キャッシュ導入前後のガチャ実行APIにおける負荷テストの詳細](https://github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/blob/main/infra/performance-test/README.md)
 
 ## 使用技術
-Go(1.22.4), Echo(4.12.0), MySQL(8.0), AWS ECS, AWS RDS, AWS CodePipleline, AWS CodeBuild, AWS Lambda, AWS S3, AWS CDK, Prometheus, Grafana
+Go(1.22.4), Echo(4.12.0), MySQL(8.0), AWS ECS, AWS RDS, AWS CodePipleline, AWS CodeBuild, AWS Lambda, AWS S3, AWS CDK, Prometheus, Grafana, Locust
