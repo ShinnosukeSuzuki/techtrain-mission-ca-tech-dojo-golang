@@ -14,6 +14,32 @@ API仕様YAML: https://github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-doj
 | /character/list | GET | ユーザ所持キャラクター一覧取得API |
 | /health-check | GET | ALB target groupのヘルスチェック用API |
 
+## DB設計
+DB設計は下図のようにした。それぞれのテーブルのIDはUUIDを使用した。
+```mermaid
+erDiagram
+    users ||--o{ users_characters : has
+    characters ||--o{ users_characters : belongs_to
+
+    users {
+        varchar(255) id PK
+        varchar(255) name
+        varchar(255) token UK
+    }
+
+    characters {
+        varchar(255) id PK
+        varchar(255) name
+        float probability
+    }
+
+    users_characters {
+        varchar(255) id PK
+        varchar(255) user_id FK
+        varchar(255) character_id FK
+    }
+```
+
 ## デプロイ
 AWS ECS on Fargateを使ってデプロイした。<br>
 [インフラ構成の詳細](https://github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/blob/main/infra/game-api-infrastructure/README.md)
@@ -31,7 +57,7 @@ go api サーバーのサイドカーに[Node exporter](https://github.com/prome
 ![alt text](infra/observation/grafana/grafana.png)
 
 ## 工夫した点
-ガチャで排出するキャラクター情報をS3から取得し、ガチャのロジックで必要となる各キャラクターの累積確率などをキャッシュ化することでリクエストごとにDBからキャラクターを取得する必要がなくなり、より多くのリクエストを捌けるようにした。<br>
+ガチャで排出するキャラクター情報をS3から取得し、ガチャのロジックで必要となる各キャラクターの累積確率などをキャッシュ化することでリクエストごとにDBからキャラクターを取得する必要がなくなり、より多くのリクエストを捌けるようにした。具体的な数値としてはECS on Fargate(1vCPU)で**110RPS**(キャッシュ導入前は30RPS)だった。<br>
 [キャッシュ導入前後のガチャ実行APIにおける負荷テストの詳細](https://github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/blob/main/infra/performance-test/README.md)
 
 ## 使用技術
