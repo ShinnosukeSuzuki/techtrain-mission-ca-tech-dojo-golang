@@ -1,7 +1,7 @@
 # GAME API インフラ
 ## 構成図
 
-![alt text](game-api-infrastructure.png)
+![alt text](game-api-infrastructure.svg)
 
 ## 各リソースの詳細
 - network-resources
@@ -18,10 +18,10 @@
 - database-resources
     - RDS(t3.micro)
 - character-bucket-{$env} : マスターデータであるcharactersテーブルの情報を保存するバケット
-    - monster_data.csv : マスターデータであるcharactersテーブルの情報(データは[パズドラモンスターデータベース](https://padmdb.rainbowsite.net/about)からレア度が1以外のもの取得し、charactersの確率はレア度の逆数とした。)
+    - characters.csv : マスターデータであるcharactersテーブルの情報(データは[パズドラモンスターデータベース](https://padmdb.rainbowsite.net/about)からレア度が1以外のもの取得し、charactersの確率はレア度の逆数とした。)
 - lambda-by-s3-resources
     - lambda-layer : lambdaを実行するのに必要なライブラリを保存。作成方法は[記事](https://qiita.com/kt215prg/items/d934c92226524a88714f)を参考にdocker上で行った。
-    - lambda(python3.9) : s3にアップロードされたmonster_data.csvを元にcharactersテーブルの情報を更新する。
+    - lambda(python3.9) : s3にアップロードされたcharacters.csvを元にcharactersテーブルの情報を更新する。
     - rule : S3バケット(character-bucket-{$env})へのアップロードをトリガーにlambdaを起動。
 - bastion-resources
     - 踏み台サーバー(t2.micro) : ssmでポートフォワードしRDSに接続するため。
