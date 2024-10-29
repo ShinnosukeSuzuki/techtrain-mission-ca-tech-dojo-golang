@@ -111,7 +111,7 @@ export class EcsFargateResources extends Construct {
       assignPublicIp: false,
       securityGroups: [ecsSecurityGroup],
       desiredCount: 1,
-      healthCheckGracePeriod: cdk.Duration.seconds(30),
+      healthCheckGracePeriod: cdk.Duration.seconds(60),
       propagateTags: ecs.PropagatedTagSource.SERVICE,
     });
 
