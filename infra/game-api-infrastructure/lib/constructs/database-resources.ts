@@ -53,7 +53,7 @@ export class DatabaseResources extends Construct {
       }),
       databaseName: 'db',
       instanceIdentifier: `game-api-rds-${env}`,
-      // インスタンスタイプを t3.medium に設定
+      // インスタンスタイプを t3.micro に設定
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MICRO),
       vpc,
       vpcSubnets: {

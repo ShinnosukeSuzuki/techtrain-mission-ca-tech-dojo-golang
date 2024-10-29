@@ -2,4 +2,3 @@ pandas
 boto3
 sqlalchemy
 mysql-connector-python
-s3fs

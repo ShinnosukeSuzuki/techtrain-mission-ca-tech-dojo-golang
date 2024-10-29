@@ -24,40 +24,40 @@ export class GameApiInfrastructureStack extends cdk.Stack {
     const env = props.environment;
 
     // NetworkResources をインスタンス化
-    const networkResources = new NetworkResources(this, `NetworkResources-${env}`, {
+    const networkResources = new NetworkResources(this, 'NetworkResources', {
       env
     });
 
     // DatabaseResources をインスタンス化
-    const databaseResources = new DatabaseResources(this, `DatabaseResources-${env}`, {
+    const databaseResources = new DatabaseResources(this, 'DatabaseResources', {
       env,
       vpc: networkResources.vpc,
       rdsSecurityGroup: networkResources.rdsSecurityGroup
     });
 
     // BastionResources をインスタンス化
-    const bastionResources = new BastionResources(this, `BastionResources-${env}`, {
+    const bastionResources = new BastionResources(this, 'BastionResources', {
       env,
       vpc: networkResources.vpc,
       bastionSecurityGroup: networkResources.bastionSecurityGroup
     });
 
     // AlbResources をインスタンス化
-    const albResources = new AlbResources(this, `AlbResources-${env}`, {
+    const albResources = new AlbResources(this, 'AlbResources', {
       env,
       vpc: networkResources.vpc,
       albSecurityGroup: networkResources.albSecurityGroup
     });
 
     // characterのマスターデータを保存するS3バケットを作成
-    const charactersBucket = new s3.Bucket(this, `CharacterBucket${env}`, {
+    const charactersBucket = new s3.Bucket(this, 'CharacterBucket', {
       bucketName: `character-bucket-${env.toLowerCase()}`,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       eventBridgeEnabled: true,
     });
 
     // LambdaByS3Resources をインスタンス化
-    const lambdaByS3Resources = new LambdaByS3Resources(this, `LambdaByS3Resources-${env}`, {
+    const lambdaByS3Resources = new LambdaByS3Resources(this, 'LambdaByS3Resources', {
       env,
       vpc: networkResources.vpc,
       lambdaSecurityGroup: networkResources.lambdaSecurityGroup,
@@ -66,7 +66,7 @@ export class GameApiInfrastructureStack extends cdk.Stack {
     });
     
     // ECR Repositoryの作成
-    const ecrRepository = new ecr.Repository(this, `EcrRepository-${env}`, {
+    const ecrRepository = new ecr.Repository(this, 'EcrRepository', {
       repositoryName: `game-api-${env.toLowerCase()}`,
       lifecycleRules: [
         {
@@ -80,7 +80,7 @@ export class GameApiInfrastructureStack extends cdk.Stack {
     const ecrRepositoryTag = ssm.StringParameter.valueForStringParameter(this, `/ECR/game-api-${env.toLowerCase()}/tag`);
 
     // EcsResources をインスタンス化
-    const ecsResources = new EcsFargateResources(this, `EcsResources-${env}`, {
+    const ecsResources = new EcsFargateResources(this, 'EcsResources', {
       env,
       vpc: networkResources.vpc,
       ecsSecurityGroup: networkResources.ecsSecurityGroup,
@@ -95,7 +95,7 @@ export class GameApiInfrastructureStack extends cdk.Stack {
     // codepielineで使用するconnectionarnをsecretsmanagerから取得
     const connectionArn = secretsmanager.Secret.fromSecretNameV2(this, 'ConnectionArn', 'ca-tech-dojo-golang-connection-arn').secretValueFromJson('ARN').unsafeUnwrap();
     // CICDResources をインスタンス化
-    const cicdResources = new CiCdResources(this, `CiCdResources-${env}`, {
+    const cicdResources = new CiCdResources(this, 'CiCdResources', {
       env,
       vpc: networkResources.vpc,
       ecrRepository,

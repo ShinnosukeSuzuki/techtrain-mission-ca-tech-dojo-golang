@@ -5,8 +5,8 @@ import { GameApiInfrastructureStack } from '../lib/game-api-infrastructure-stack
 
 const app = new cdk.App();
 const env = process.env.ENV || 'Dev';
-const suffix = env === 'Prod' ? '' : 'Dev';
-new GameApiInfrastructureStack(app, `GameApiInfrastructureStack${suffix}`, {
+
+new GameApiInfrastructureStack(app, `GameApiInfrastructureStack${env}`, {
   environment: process.env.ENV || 'Dev' as string,
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
