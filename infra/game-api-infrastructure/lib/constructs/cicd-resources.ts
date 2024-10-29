@@ -151,8 +151,8 @@ export class CiCdResources extends Construct {
         Includes: [env === 'Prod' ? 'main' : 'develop'],
       },
       FilePaths: {
-        // dockerfileの作成に関係のない.mdファイル、infra以下の変更は無視
-        Excludes: ['**/*.md', 'infra/**'],
+        // dockerfileの作成に関係のある.goファイルのみを対象にする
+        Includes: ['**/*.go'],
       },
     };
 
