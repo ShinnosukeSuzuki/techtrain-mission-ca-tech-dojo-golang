@@ -1,21 +1,23 @@
 # ゲームガチャAPIの実装
 
 ## 概要
-TechTrain MISSION　[オンライン版　CA Tech Dojo サーバサイド (Go)編](https://techtrain.dev/missions/12) のリポジトリ。<br>
+TechTrain MISSION　[オンライン版　CA Tech Dojo サーバサイド (Go)編](https://github.com/CyberAgentHack/techtrain-mission) のリポジトリ。<br>
 スマートフォン向けゲームのAPIの開発。<br>
 API仕様YAML: https://github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/blob/main/api-document.yaml<br>
 作成したAPIは以下の6つ。<br>
-| エンドポイント | メソッド | 説明 |
-|----------------|----------|------|
-| /user/create | POST | ユーザアカウント認証情報作成API |
-| /user/get | GET | ユーザ情報取得API |
-| /user/update | PUT | ユーザ情報更新API |
-| /gacha/draw | POST | ガチャ実行API |
-| /character/list | GET | ユーザ所持キャラクター一覧取得API |
-| /health-check | GET | ALB target groupのヘルスチェック用API |
+認証はリクエストヘッダのx-tokenを読み取ってデータベースに照会する。
+| エンドポイント | メソッド | 認証 | 説明 |
+|----------------|----------|------|------|
+| /user/create | POST | - | ユーザアカウント認証情報作成API |
+| /user/get | GET | 必要 | ユーザ情報取得API |
+| /user/update | PUT | 必要 | ユーザ情報更新API |
+| /gacha/draw | POST | 必要 | ガチャ実行API |
+| /character/list | GET | 必要 | ユーザ所持キャラクター一覧取得API |
+| /health-check | GET | - | ALB target groupのヘルスチェック用API |
 
 ## DB設計
-DB設計は下図のようにした。それぞれのテーブルのIDはUUIDを使用した。
+DB設計は下図のようにした。それぞれのテーブルのIDはUUID(v4)を使用した。<br>
+ガチャから排出されるキャラクターの数は**11472**体。データは[パズドラモンスターデータベース](https://padmdb.rainbowsite.net/about)からレア度が1以外のもの取得し、確率はレア度の逆数とした。
 ```mermaid
 erDiagram
     users ||--o{ users_characters : has
@@ -40,9 +42,11 @@ erDiagram
     }
 ```
 
-## デプロイ
-AWS ECS on Fargateを使ってデプロイした。<br>
+## インフラ構成図
+下図の様にAWS ECS on Fargateを使ってデプロイした。<br>
 [インフラ構成の詳細](https://github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/blob/main/infra/game-api-infrastructure/README.md)
+![alt text](infra/game-api-infrastructure/game-api-infrastructure.svg)
+
 ## CICD
 CICDにはAWS CodePipelineとCodeBuildを使用した。<br>
 mainブランチへのpushをトリガーとし、mdファイルやinfraディレクトリの変更はトリガーから除いた。<br>
