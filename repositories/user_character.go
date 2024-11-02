@@ -56,8 +56,13 @@ func (r *UserCharacterRepository) InsertBulk(userID string, gachaResults []model
 	valueStrings := make([]string, 0, len(gachaResults))
 	valueArgs := make([]any, 0, len(gachaResults)*3)
 	for _, g := range gachaResults {
+		// UUIDの生成
+		newID, err := uuid.GenerateUUID()
+		if err != nil {
+			return fmt.Errorf("failed to generate UUID: %w", err)
+		}
 		valueStrings = append(valueStrings, "(UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?))")
-		valueArgs = append(valueArgs, uuid.GenerateUUID())
+		valueArgs = append(valueArgs, newID)
 		valueArgs = append(valueArgs, userID)
 		valueArgs = append(valueArgs, g.ID)
 	}
