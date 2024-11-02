@@ -3,7 +3,6 @@ package services
 import (
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/dto"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/models"
-	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/pkg/uuid"
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/repositories"
 )
 
@@ -21,10 +20,7 @@ func NewUserService(r repositories.UserRepository) *UserService {
 // ハンドラー CreateHandler 用のサービスメソッド
 func (s *UserService) Create(name string) (models.User, error) {
 
-	id := uuid.GenerateUUID()
-	token := uuid.GenerateUUID()
-
-	eu, err := s.uRep.Create(id, name, token)
+	eu, err := s.uRep.Create(name)
 	if err != nil {
 		return models.User{}, err
 	}
