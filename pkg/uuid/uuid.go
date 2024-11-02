@@ -1,9 +1,16 @@
 package uuid
 
-import "github.com/google/uuid"
+import (
+	"fmt"
 
-// UUIDを生成する関数
-func GenerateUUID() string {
-	token := uuid.New()
-	return token.String()
+	"github.com/google/uuid"
+)
+
+// UUIDv7を生成する関数
+func GenerateUUID() (string, error) {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return "", fmt.Errorf("failed to generate UUID v7: %w", err)
+	}
+	return id.String(), nil
 }
