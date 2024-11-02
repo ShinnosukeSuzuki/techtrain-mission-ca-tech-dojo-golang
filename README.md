@@ -16,7 +16,7 @@ API仕様YAML: https://github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-doj
 | /health-check | GET | - | ALB target groupのヘルスチェック用API |
 
 ## DB設計
-DB設計は下図のようにした。それぞれのテーブルのIDはUUID(v4)を使用した。<br>
+DB設計は下図のようにした。それぞれのテーブルのIDはUUID(**v7**)を使用した。v7を使用したのは、完全にランダムであるv4を主キーとして使用する場合のインサート処理が遅くなるためです。[参考動画](https://youtu.be/ifnszOLLgjs?si=itWv-uGl_YQbo-sl)<br>
 MySQLではUUIDをvacharで保存するとパフォーマンスが悪くなることからバージョン8から使用できるUUID_TO_BINなどを使用してbinaryで保存するようにした。<br>
 ガチャから排出されるキャラクターの数は**11472**体。データは[パズドラモンスターデータベース](https://padmdb.rainbowsite.net/about)からレア度が1以外のもの取得し、確率はレア度の逆数とした。
 ```mermaid

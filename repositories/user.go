@@ -2,8 +2,10 @@ package repositories
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/dto"
+	"github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-dojo-golang/pkg/uuid"
 )
 
 // リポジトリ構造体を定義
@@ -16,22 +18,35 @@ func NewUserRepository(db *sql.DB) UserRepository {
 	return UserRepository{db: db}
 }
 
-// nameとtokenから新規ユーザーを作成する
-func (r *UserRepository) Create(id, name, token string) (dto.User, error) {
+// nameからユーザーを作成する
+func (r *UserRepository) Create(name string) (dto.User, error) {
+	// UUIDを使ってユーザーIDを生成
+	id, err := uuid.GenerateUUID()
+	if err != nil {
+		return dto.User{}, fmt.Errorf("failed to generate user id: %w", err)
+	}
+
+	// UUIDを使ってトークンを生成
+	token, err := uuid.GenerateUUID()
+	if err != nil {
+		return dto.User{}, fmt.Errorf("failed to generate token: %w", err)
+	}
+
 	const query = `
 		INSERT INTO users (id, name, token)
 		VALUES (UUID_TO_BIN(?), ?, UUID_TO_BIN(?));
 	`
 
-	_, err := r.db.Exec(query, id, name, token)
+	_, err = r.db.Exec(query, id, name, token)
 	if err != nil {
 		return dto.User{}, err
 	}
 
-	var newUser dto.User
-	newUser.ID = id
-	newUser.Name = name
-	newUser.Token = token
+	newUser := dto.User{
+		ID:    id,
+		Name:  name,
+		Token: token,
+	}
 
 	return newUser, nil
 }

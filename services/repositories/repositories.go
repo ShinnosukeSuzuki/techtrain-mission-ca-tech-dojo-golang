@@ -7,7 +7,7 @@ import (
 
 // User関連を引き受けるリポジトリインターフェース
 type UserRepository interface {
-	Create(name string, token string) (dto.User, error)
+	Create(name string) (dto.User, error)
 	GetByToken(token string) (dto.User, error)
 	GetById(userID string) (dto.User, error)
 	UpdateName(userID, name string) error

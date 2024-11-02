@@ -18,7 +18,7 @@ class MySQLClient:
     def close(self):
         self.conn.close()
 
- # csvファイルを読み込み、charactersテーブルにアップサートする
+    # csvファイルを読み込み、charactersテーブルにアップサートする
     def update_characters(self, df: pd.DataFrame):
         transaction = self.conn.begin()
         
@@ -28,18 +28,24 @@ class MySQLClient:
             name = row['name']
             probability = row['probability']
             
-            # アップサートクエリを生成 (id が存在しない場合は INSERT し、存在する場合は UPDATE)
-            upsert_query = f"""
+            # アップサートクエリを生成 (idをUUID_TO_BIN()で変換)
+            upsert_query = """
             INSERT INTO characters (id, name, probability)
-            VALUES ('{id}', '{name}', {probability})
+            VALUES (UUID_TO_BIN(:id), :name, :probability)
             ON DUPLICATE KEY UPDATE
                 name = VALUES(name),
                 probability = VALUES(probability);
             """
             
             try:
+                # パラメータをバインド
+                params = {
+                    'id': id,
+                    'name': name,
+                    'probability': probability
+                }
                 # クエリを実行
-                self.conn.execute(text(upsert_query))
+                self.conn.execute(text(upsert_query), params)
             except Exception as e:
                 # エラーが発生した行を表示
                 print(f"Error at row {id}: {row}")
