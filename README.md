@@ -17,6 +17,7 @@ API仕様YAML: https://github.com/ShinnosukeSuzuki/techtrain-mission-ca-tech-doj
 
 ## DB設計
 DB設計は下図のようにした。それぞれのテーブルのIDはUUID(v4)を使用した。<br>
+MySQLではUUIDをvacharで保存するとパフォーマンスが悪くなることからバージョン8から使用できるUUID_TO_BINなどを使用してbinaryで保存するようにした。<br>
 ガチャから排出されるキャラクターの数は**11472**体。データは[パズドラモンスターデータベース](https://padmdb.rainbowsite.net/about)からレア度が1以外のもの取得し、確率はレア度の逆数とした。
 ```mermaid
 erDiagram
@@ -24,21 +25,21 @@ erDiagram
     characters ||--o{ users_characters : belongs_to
 
     users {
-        varchar(255) id PK
+        binary(16) id PK
         varchar(255) name
-        varchar(255) token UK
+        binary(16) token UK
     }
 
     characters {
-        varchar(255) id PK
+        binary(16) id PK
         varchar(255) name
         float probability
     }
 
     users_characters {
-        varchar(255) id PK
-        varchar(255) user_id FK
-        varchar(255) character_id FK
+        binary(16) id PK
+        binary(16) user_id FK
+        binary(16) character_id FK
     }
 ```
 
