@@ -20,7 +20,7 @@ func NewUserRepository(db *sql.DB) UserRepository {
 func (r *UserRepository) Create(id, name, token string) (dto.User, error) {
 	const query = `
 		INSERT INTO users (id, name, token)
-		VALUES (?, ?, ?);
+		VALUES (UUID_TO_BIN(?), ?, UUID_TO_BIN(?));
 	`
 
 	_, err := r.db.Exec(query, id, name, token)
@@ -39,9 +39,9 @@ func (r *UserRepository) Create(id, name, token string) (dto.User, error) {
 // tokenからユーザーを取得する
 func (r *UserRepository) GetByToken(token string) (dto.User, error) {
 	const query = `
-		SELECT id, name, token
+		SELECT BIN_TO_UUID(id) as id, name, BIN_TO_UUID(token) as token
 		FROM users
-		WHERE token = ?;
+		WHERE token = UUID_TO_BIN(?);
 	`
 
 	var user dto.User
@@ -56,9 +56,9 @@ func (r *UserRepository) GetByToken(token string) (dto.User, error) {
 // idからユーザーを取得する
 func (r *UserRepository) GetById(userID string) (dto.User, error) {
 	const query = `
-		SELECT id, name, token
+		SELECT BIN_TO_UUID(id) as id, name, BIN_TO_UUID(token) as token
 		FROM users
-		WHERE id = ?;
+		WHERE id = UUID_TO_BIN(?);
 	`
 
 	var user dto.User
@@ -75,7 +75,7 @@ func (r *UserRepository) UpdateName(userID, name string) error {
 	const query = `
 		UPDATE users
 		SET name = ?
-		WHERE id = ?;
+		WHERE id = UUID_TO_BIN(?);
 	`
 
 	_, err := r.db.Exec(query, name, userID)
