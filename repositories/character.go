@@ -18,7 +18,7 @@ func NewCharacterRepository(db *sql.DB) CharacterRepository {
 
 // キャラクター全件取得
 func (r *CharacterRepository) GetAllList() ([]dto.Character, error) {
-	const query = `SELECT id, name, probability FROM characters;`
+	const query = `SELECT BIN_TO_UUID(id) as id, name, probability FROM characters;`
 
 	rows, err := r.db.Query(query)
 	if err != nil {

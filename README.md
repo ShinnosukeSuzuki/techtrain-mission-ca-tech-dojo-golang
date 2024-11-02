@@ -24,21 +24,21 @@ erDiagram
     characters ||--o{ users_characters : belongs_to
 
     users {
-        varchar(255) id PK
+        binary(16) id PK
         varchar(255) name
-        varchar(255) token UK
+        binary(16) token UK
     }
 
     characters {
-        varchar(255) id PK
+        binary(16) id PK
         varchar(255) name
         float probability
     }
 
     users_characters {
-        varchar(255) id PK
-        varchar(255) user_id FK
-        varchar(255) character_id FK
+        binary(16) id PK
+        binary(16) user_id FK
+        binary(16) character_id FK
     }
 ```
 

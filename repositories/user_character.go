@@ -23,9 +23,9 @@ func NewUserCharacterRepository(db *sql.DB) UserCharacterRepository {
 // userのidに一致するキャラクターを取得する
 func (r *UserCharacterRepository) GetList(userID string) ([]dto.UserCharacter, error) {
 	const query = `
-		SELECT id, character_id
+		SELECT BIN_TO_UUID(id) as id, BIN_TO_UUID(character_id) as character_id
 		FROM users_characters
-		WHERE user_id = ?;
+		WHERE user_id = UUID_TO_BIN(?);
 	`
 
 	rows, err := r.db.Query(query, userID)
@@ -56,7 +56,7 @@ func (r *UserCharacterRepository) InsertBulk(userID string, gachaResults []model
 	valueStrings := make([]string, 0, len(gachaResults))
 	valueArgs := make([]any, 0, len(gachaResults)*3)
 	for _, g := range gachaResults {
-		valueStrings = append(valueStrings, "(?, ?, ?)")
+		valueStrings = append(valueStrings, "(UUID_TO_BIN(?), UUID_TO_BIN(?), UUID_TO_BIN(?))")
 		valueArgs = append(valueArgs, uuid.GenerateUUID())
 		valueArgs = append(valueArgs, userID)
 		valueArgs = append(valueArgs, g.ID)
