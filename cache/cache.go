@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"log"
+	"os"
 	"runtime"
 	"strconv"
 	"sync"
@@ -22,6 +23,7 @@ type CharacterProbabilityCache struct {
 	s3Client                *s3.S3
 	bucketName              string
 	filePath                string
+	useS3                   bool
 }
 
 type parsedRecord struct {
@@ -30,11 +32,33 @@ type parsedRecord struct {
 	probability float64
 }
 
-func NewCharacterProbabilityCache(region, bucketName, filePath string) (*CharacterProbabilityCache, error) {
-	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String(region),
-	}))
-	s3Client := s3.New(sess)
+func NewCharacterProbabilityCache() (*CharacterProbabilityCache, error) {
+	env := os.Getenv("ENV")
+
+	// ローカル環境かS3を使用するかを判定
+	useS3 := env == "Prod" || env == "Dev"
+	var bucketName, filePath, region string
+	var s3Client *s3.S3
+
+	if useS3 {
+		// 環境変数からS3の設定を取得
+		region = os.Getenv("REGION")
+		bucketName = os.Getenv("BUCKET_NAME")
+		filePath = os.Getenv("FILE_PATH")
+
+		if region == "" || bucketName == "" || filePath == "" {
+			return nil, fmt.Errorf("missing S3 configuration: REGION, BUCKET_NAME, and FILE_PATH must be set")
+		}
+
+		// S3クライアントを初期化
+		sess := session.Must(session.NewSession(&aws.Config{
+			Region: aws.String(region),
+		}))
+		s3Client = s3.New(sess)
+	} else {
+		// ローカル環境では固定ファイルパスを使用
+		filePath = "infra/game-api-infrastructure/S3/characters.csv"
+	}
 
 	cache := &CharacterProbabilityCache{
 		Characters:              []models.Character{},
@@ -43,6 +67,7 @@ func NewCharacterProbabilityCache(region, bucketName, filePath string) (*Charact
 		s3Client:                s3Client,
 		bucketName:              bucketName,
 		filePath:                filePath,
+		useS3:                   useS3,
 	}
 
 	// 初回のデータ読み込み
@@ -54,16 +79,27 @@ func NewCharacterProbabilityCache(region, bucketName, filePath string) (*Charact
 }
 
 func (c *CharacterProbabilityCache) Update() error {
-	resp, err := c.s3Client.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(c.bucketName),
-		Key:    aws.String(c.filePath),
-	})
-	if err != nil {
-		return err
+	var reader *csv.Reader
+	if c.useS3 {
+		// S3からデータを取得
+		resp, err := c.s3Client.GetObject(&s3.GetObjectInput{
+			Bucket: aws.String(c.bucketName),
+			Key:    aws.String(c.filePath),
+		})
+		if err != nil {
+			return fmt.Errorf("failed to fetch from S3: %w", err)
+		}
+		defer resp.Body.Close()
+		reader = csv.NewReader(resp.Body)
+	} else {
+		// ローカルファイルを読み込む
+		file, err := os.Open(c.filePath)
+		if err != nil {
+			return fmt.Errorf("failed to open local file: %w", err)
+		}
+		defer file.Close()
+		reader = csv.NewReader(file)
 	}
-	defer resp.Body.Close()
-
-	reader := csv.NewReader(resp.Body)
 
 	// ヘッダー行を読み飛ばす
 	if _, err := reader.Read(); err != nil {

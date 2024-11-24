@@ -31,11 +31,7 @@ func main() {
 	}
 
 	// キャッシュを初期化
-	characterCache, err := cache.NewCharacterProbabilityCache(
-		os.Getenv("REGION"),
-		os.Getenv("BUCKET_NAME"),
-		os.Getenv("FILE_PATH"),
-	)
+	characterCache, err := cache.NewCharacterProbabilityCache()
 	if err != nil {
 		log.Fatalf("Failed to initialize cache: %v", err)
 	}
