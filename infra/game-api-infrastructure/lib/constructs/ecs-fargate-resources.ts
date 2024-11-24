@@ -66,6 +66,7 @@ export class EcsFargateResources extends Construct {
         REGION: cdk.Stack.of(this).region,
         BUCKET_NAME: charactersBucket.bucketName,
         FILE_PATH: 'characters.csv',
+        ENV: env,
       },
       secrets: {
         DATABASE: ecs.Secret.fromSecretsManager(adminUserPassword, 'dbname'),

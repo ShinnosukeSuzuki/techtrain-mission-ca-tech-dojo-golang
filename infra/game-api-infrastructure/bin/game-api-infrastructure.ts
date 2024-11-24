@@ -7,11 +7,7 @@ const app = new cdk.App();
 const env = process.env.ENV || 'Dev';
 
 new GameApiInfrastructureStack(app, `GameApiInfrastructureStack${env}`, {
-  environment: process.env.ENV || 'Dev' as string,
-  env: {
-    account: process.env.CDK_DEFAULT_ACCOUNT,
-    region: process.env.CDK_DEFAULT_REGION,
-  },
+  environment: env as string,
 });
 
 cdk.Tags.of(app).add("ENV", env);
