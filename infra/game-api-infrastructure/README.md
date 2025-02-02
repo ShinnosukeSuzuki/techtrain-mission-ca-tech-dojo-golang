@@ -43,6 +43,6 @@
 ## Useful commands
 以下のコマンドを実行することでデプロイできる
 ```
-export ENV=環境名 # (本番：Prod、開発：Dev)
+export ENV=環境名 # (本番：Prd、開発：Dev)
 cdk deploy
 ```
