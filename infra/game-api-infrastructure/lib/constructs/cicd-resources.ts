@@ -100,7 +100,7 @@ export class CiCdResources extends Construct {
       actionName: 'Source',
       owner: 'ShinnosukeSuzuki',
       repo: 'techtrain-mission-ca-tech-dojo-golang',
-      branch: env === 'Prod' ? 'main' : 'develop',
+      branch: env === 'Prd' ? 'main' : 'develop',
       output: sourceOutput,
       connectionArn: connectionArn,
       triggerOnPush: false,
@@ -148,7 +148,7 @@ export class CiCdResources extends Construct {
     // addPropertyOverrideでトリガー条件を上書きする
     const pushFilterJson = {
       Branches: {
-        Includes: [env === 'Prod' ? 'main' : 'develop'],
+        Includes: [env === 'Prd' ? 'main' : 'develop'],
       },
       FilePaths: {
         // dockerfileの作成に関係のある.goファイルのみを対象にする
